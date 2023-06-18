@@ -2143,10 +2143,10 @@
 &pm8350b_haptics {
 	status = "ok";
 //#ifdef OPLUS_FEATURE_CHG_BASIC
-	qcom,vmax-mv = <1280>;
+	qcom,Vrms_mv = <1270>;
+	qcom,vmax-mv = <8700>;
 	qcom,cl-vmax-mv = <1280>;
 	qcom,lra-period-us = <5882>;
-	qcom,fifo-vmax-mv = <8700>;
 	qcom,old-steady-vmax-mv = <8700>;
 	qcom,cal-data-restore;
 //#endif
