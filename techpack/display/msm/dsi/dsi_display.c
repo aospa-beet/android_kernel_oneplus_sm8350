@@ -66,6 +66,7 @@ extern bool oplus_ffl_trigger_finish;
 #ifdef CONFIG_OPLUS_SYSTEM_CHANGE
 static struct dsi_display *primary_display;
 static struct dsi_display *secondary_display;
+static struct dsi_display *current_display;
 #endif /* CONFIG_OPLUS_SYSTEM_CHANGE */
 
 #ifdef CONFIG_OPLUS_SYSTEM_CHANGE
@@ -9296,6 +9297,16 @@ struct dsi_display *get_sec_display(void) {
 		return secondary_display;
 }
 EXPORT_SYMBOL(get_sec_display);
+
+void set_current_display(struct dsi_display *display) {
+                current_display = display;
+}
+EXPORT_SYMBOL(set_current_display);
+struct dsi_display *get_current_display(void) {
+                return current_display;
+}
+EXPORT_SYMBOL(get_current_display);
+
 #endif
 
 void __init dsi_display_register(void)

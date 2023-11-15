@@ -128,6 +128,11 @@ static u32 dither_matrix[DITHER_MATRIX_SZ] = {
 extern bool is_spread_backlight(struct dsi_display *display, int level);
 extern void update_pending_backlight(struct dsi_display *display, int level);
 extern int get_boot_mode(void);
+struct dc_apollo_pcc_sync dc_apollo;
+EXPORT_SYMBOL(dc_apollo);
+extern int dc_apollo_enable;
+extern int oplus_backlight_wait_vsync(struct drm_encoder *drm_enc);
+extern int dc_apollo_sync_hbmon(struct dsi_display *display);
 #endif
 
 static int sde_backlight_device_update_status(struct backlight_device *bd)
@@ -1125,7 +1130,7 @@ int sde_connector_pre_kickoff(struct drm_connector *connector)
 	if (c_conn->connector_type == DRM_MODE_CONNECTOR_DSI) {
 		display = (struct dsi_display *)c_conn->display;
 		if(display && display->panel && display->panel->oplus_priv.vendor_name) {
-			if ((!strcmp(display->panel->oplus_priv.vendor_name, "AMB655X")) || (!strcmp(display->panel->oplus_priv.vendor_name, "AMB670YF01"))) {
+			if ((!strcmp(display->panel->oplus_priv.vendor_name, "AMB655X")) || (!strcmp(display->panel->oplus_priv.vendor_name, "AMB670YF01")) || (!strcmp(display->panel->oplus_priv.vendor_name, "AMS662ZS01"))) {
 				rc = sde_connector_update_hbm(connector);
 			}
 		}

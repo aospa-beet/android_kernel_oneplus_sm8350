@@ -2632,6 +2632,7 @@ void sde_crtc_complete_commit(struct drm_crtc *crtc,
 		struct sde_crtc_state *old_cstate;
 		struct sde_crtc_state *cstate;
 		struct msm_drm_notifier notifier_data;
+                struct dsi_display *display = get_main_display();
 		int blank;
 
 		if (!old_state) {
@@ -2652,6 +2653,16 @@ void sde_crtc_complete_commit(struct drm_crtc *crtc,
 				#endif
 				u32 current_vblank;
 				int ret;
+
+				if (!strcmp(display->panel->oplus_priv.vendor_name, "AMS662ZS01")) {
+                                        if (OPLUS_DISPLAY_AOD_SCENE == get_oplus_display_scene()) {
+                                                target_vblank += 3;
+                                        }
+                                } else if (!strcmp(display->panel->name, "21031 samsung AMS643YE05 dsc cmd mode panel")) {
+                                        if (OPLUS_DISPLAY_AOD_SCENE == get_oplus_display_scene()) {
+                                                target_vblank += 2;
+                                        }
+                                }
 
 				#if IS_ENABLED(CONFIG_QGKI)
 				current_vblank = drm_crtc_vblank_count_and_time(crtc, &vblanktime);

@@ -31,6 +31,8 @@
 #ifdef CONFIG_OPLUS_SYSTEM_CHANGE
 #include "oplus_adfr.h"
 #include "sde_trace.h"
+
+int nolp_state = 0;
 #endif
 
 /**
@@ -51,6 +53,12 @@
 #define DEFAULT_PANEL_PREFILL_LINES	25
 #define HIGH_REFRESH_RATE_THRESHOLD_TIME_US	500
 #define MIN_PREFILL_LINES      40
+
+#ifdef CONFIG_OPLUS_SYSTEM_CHANGE
+#define BL_LEVEL_9   	   9
+#define BL_LEVEL_2047      2047
+#define BL_LEVEL_2300      2300
+#endif
 
 static void dsi_dce_prepare_pps_header(char *buf, u32 pps_delay_ms)
 {
@@ -462,6 +470,10 @@ static int dsi_panel_power_on(struct dsi_panel *panel)
 	}
 #endif
 
+#ifdef CONFIG_OPLUS_SYSTEM_CHANGE
+        if (!strcmp(panel->name,"samsung ams662zs01 fhd cmd mode dsc dsi panel"))
+                mdelay(2);
+#endif
 	rc = dsi_panel_reset(panel);
 	if (rc) {
 		DSI_ERR("[%s] failed to reset panel, rc=%d\n", panel->name, rc);
@@ -528,6 +540,9 @@ static int dsi_panel_power_off(struct dsi_panel *panel)
 		DSI_ERR("[%s] failed set pinctrl state, rc=%d\n", panel->name,
 		       rc);
 	}
+
+	if (!strcmp(panel->name,"samsung ams662zs01 fhd cmd mode dsc dsi panel"))
+                mdelay(2);
 
 	rc = dsi_pwr_enable_regulator(&panel->power_info, false);
 	if (rc)
@@ -902,18 +917,29 @@ static int dsi_panel_update_backlight(struct dsi_panel *panel,
 
 			if (rc)
 				DSI_ERR("[%s] failed to send CMD_HBM cmds, rc=%d\n", panel->name, rc);
-		} else if (!strcmp(panel->oplus_priv.vendor_name, "AMS662ZS01")) {
+		}
+		else if (!strcmp(panel->name,"samsung AMS643YE01 dsc cmd mode panel")
+					|| !strcmp(panel->name, "samsung ams662zs01 dvt dsc cmd mode panel")) {
+			if (!strcmp(panel->name, "samsung ams662zs01 dvt dsc cmd mode panel")) {
+				if (get_oplus_display_power_status() == OPLUS_DISPLAY_POWER_DOZE
+					|| get_oplus_display_power_status() == OPLUS_DISPLAY_POWER_DOZE_SUSPEND) {
+					if (!nolp_state) {
+						rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_NOLP);
+						nolp_state = 1;
+					}
+				}
+			}
 			if (bl_lvl > PANEL_MAX_NOMAL_BRIGHTNESS) {
 				if (enable_global_hbm_flags == 0) {
 					rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_HBM_ENTER_SWITCH);
 					enable_global_hbm_flags = 1;
 				}
-			} else if (!strcmp(panel->name, "samsung AMS643YE01 dsc cmd mode panel")) {
+			}
+			else {
 				if(enable_global_hbm_flags == 1) {
 					rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_HBM_EXIT_SWITCH);
 					enable_global_hbm_flags = 0;
-				}
-				else {
+				} else if (!strcmp(panel->name, "samsung AMS643YE01 dsc cmd mode panel")) {
 					payload[1] = 0x20;
 					memset(&msg, 0, sizeof(msg));
 					msg.channel = dsi->channel;
@@ -943,6 +969,20 @@ static int dsi_panel_update_backlight(struct dsi_panel *panel,
 				if (rc < 0)
 					pr_err("send DSI_CMD_HBM_ENTER_SWITCH fail\n");
 			}
+		}
+		else if (!strcmp(panel->oplus_priv.vendor_name, "AMS662ZS01")) {
+			if (bl_lvl > PANEL_MAX_NOMAL_BRIGHTNESS) {
+				if (enable_global_hbm_flags == 0) {
+					rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_HBM_ENTER_SWITCH);
+					enable_global_hbm_flags = 1;
+				}
+			}
+			else {
+				if(enable_global_hbm_flags == 1) {
+					rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_HBM_EXIT_SWITCH);
+					enable_global_hbm_flags = 0;
+				}
+			}
 		} else if(!strcmp(panel->oplus_priv.vendor_name, "AMB670YF01")) {
 				oplus_display_panel_backlight_mapping(panel, &bl_lvl);
 		}
@@ -969,6 +1009,14 @@ static int dsi_panel_update_backlight(struct dsi_panel *panel,
 			bl_lvl = 400;
 		}
 	}
+
+	if (!strcmp(panel->name, "21031 samsung AMS643YE05 dsc cmd mode panel")) {
+		if (bl_lvl > panel->bl_config.bl_normal_max_level) {
+			bl_lvl = bl_lvl + panel->bl_config.bl_hbm_min_level - panel->bl_config.bl_normal_max_level - 1;
+			bl_lvl = bl_lvl < panel->bl_config.bl_max_level ? bl_lvl : panel->bl_config.bl_max_level;
+		}
+	}
+
 #endif /* CONFIG_OPLUS_SYSTEM_CHANGE */
 		rc = mipi_dsi_dcs_set_display_brightness(dsi, bl_lvl);
 	if (rc < 0)
@@ -1054,6 +1102,17 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
 	} else {
 		DSI_DEBUG("backlight type:%d lvl:%d\n", bl->type, bl_lvl);
 	}
+
+#ifdef CONFIG_OPLUS_SYSTEM_CHANGE
+        if (panel->oplus_priv.pre_bl_delay_enabled &&
+                                (panel->oplus_priv.pre_bl_delay_ms > 0)) {
+                if (bl_lvl > 0 && panel->oplus_priv.first_bl_on) {
+                        usleep_range(panel->oplus_priv.pre_bl_delay_ms * 1000,
+                                        (panel->oplus_priv.pre_bl_delay_ms * 1000) + 100);
+                        panel->oplus_priv.first_bl_on = false;
+                }
+        }
+#endif /*CONFIG_OPLUS_SYSTEM_CHANGE*/
 
 	switch (bl->type) {
 	case DSI_BACKLIGHT_WLED:
@@ -5117,8 +5176,16 @@ int dsi_panel_set_nolp(struct dsi_panel *panel)
 		(!strcmp(panel->oplus_priv.vendor_name, "AMB670YF01") && (panel->panel_id2 >= 5))) {
 		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_NOLP_PVT);
 	} else {
+                if (!strcmp(panel->name, "samsung ams662zs01 dvt dsc cmd mode panel")) {
+                                if (!nolp_state) {
+                                        rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_NOLP);
+                                        nolp_state = 1;
+                                }
+                }
+		else {
 		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_NOLP);
-    }
+    		}
+	}
 	if (rc)
 		DSI_ERR("[%s] failed to send DSI_CMD_SET_NOLP cmd, rc=%d\n",
 		       panel->name, rc);

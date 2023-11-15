@@ -354,11 +354,21 @@ static int sde_hw_pp_setup_dither(struct sde_hw_pingpong *pp,
 		return -EINVAL;
 
 	offset += 4;
-	data = dither_depth_map[dither->c0_bitdepth] & REG_MASK(2);
-	data |= (dither_depth_map[dither->c1_bitdepth] & REG_MASK(2)) << 2;
-	data |= (dither_depth_map[dither->c2_bitdepth] & REG_MASK(2)) << 4;
-	data |= (dither_depth_map[dither->c3_bitdepth] & REG_MASK(2)) << 6;
-	data |= (dither->temporal_en) ? (1 << 8) : 0;
+//#ifdef CONFIG_OPLUS_SYSTEM_CHANGE
+	if (!strcmp(display->panel->oplus_priv.vendor_name, "AMS662ZS01")) {
+		data = 2 & REG_MASK(2);
+		data |= (2 & REG_MASK(2)) << 2;
+		data |= (2 & REG_MASK(2)) << 4;
+		data |= (2 & REG_MASK(2)) << 6;
+		data |=  (1 << 8);
+	} else {
+//#endif
+		data = dither_depth_map[dither->c0_bitdepth] & REG_MASK(2);
+		data |= (dither_depth_map[dither->c1_bitdepth] & REG_MASK(2)) << 2;
+		data |= (dither_depth_map[dither->c2_bitdepth] & REG_MASK(2)) << 4;
+		data |= (dither_depth_map[dither->c3_bitdepth] & REG_MASK(2)) << 6;
+		data |= (dither->temporal_en) ? (1 << 8) : 0;
+	}
 	SDE_REG_WRITE(c, base + offset, data);
 
 	for (i = 0; i < DITHER_MATRIX_SZ - 3; i += 4) {
@@ -370,7 +380,8 @@ static int sde_hw_pp_setup_dither(struct sde_hw_pingpong *pp,
 		SDE_REG_WRITE(c, base + offset, data);
 	}
 //#ifdef CONFIG_OPLUS_SYSTEM_CHANGE
-	if(strcmp(display->panel->name, "samsung amb655x fhd cmd mode dsc dsi panel") == 0) {
+	if((strcmp(display->panel->name, "samsung amb655x fhd cmd mode dsc dsi panel") == 0) ||
+		!strcmp(display->panel->oplus_priv.vendor_name, "AMS662ZS01")) {
 		SDE_REG_WRITE(c, base, 0x11);
 	} else {
 		SDE_REG_WRITE(c, base, 0);

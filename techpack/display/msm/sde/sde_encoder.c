@@ -4404,7 +4404,7 @@ int sde_encoder_prepare_for_kickoff(struct drm_encoder *drm_enc,
 			} else {
 				display = c_conn->display;
 				if(display && display->panel && display->panel->oplus_priv.vendor_name) {
-					if (strcmp(display->panel->oplus_priv.vendor_name, "AMB655X") && strcmp(display->panel->oplus_priv.vendor_name, "AMB670YF01")) {
+					if (strcmp(display->panel->oplus_priv.vendor_name, "AMB655X") && strcmp(display->panel->oplus_priv.vendor_name, "AMB670YF01") && strcmp(display->panel->oplus_priv.vendor_name, "AMS662ZS01")) {
 						sde_connector_update_hbm(sde_enc->cur_master->connector);
 					}
 				}

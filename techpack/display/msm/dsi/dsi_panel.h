@@ -136,6 +136,7 @@ struct dsi_backlight_config {
 	u32 bl_normal_max_level;
 	u32 brightness_normal_max_level;
 	u32 brightness_default_level;
+	u32 bl_hbm_min_level;
 #endif /* CONFIG_OPLUS_SYSTEM_CHANGE */
 
 	u32 bl_level;
@@ -220,12 +221,32 @@ struct dsi_panel_oplus_privite {
 	bool is_osc_support;
 	u32 osc_clk_mode0_rate;
 	u32 osc_clk_mode1_rate;
+        bool first_bl_on;
+	bool pre_bl_delay_enabled;
+        u32 pre_bl_delay_ms;
 	bool dp_support;
 	bool cabc_enabled;
+	u32 cabc_status;
 	bool dre_enabled;
 	// Add for apollo support
 	bool is_apollo_support;
-	u32 sync_brightness_level;
+        u32 sync_brightness_level;
+        bool dc_apollo_sync_enable;
+        u32 dc_apollo_sync_brightness_level;
+        u32 dc_apollo_sync_brightness_level_pcc;
+        u32 dc_apollo_sync_brightness_level_pcc_min;
+/********************************************
+        fp_type usage:
+        bit(0):lcd capacitive fingerprint(aod/fod are not supported)
+        bit(1):oled capacitive fingerprint(only support aod)
+        bit(2):optical fingerprint old solution(dim layer and pressed icon are controlled by kernel)
+        bit(3):optical fingerprint new solution(dim layer and pressed icon are not controlled by kernel)
+        bit(4):local hbm
+        bit(5):pressed icon brightness adaptive
+        bit(6):ultrasonic fingerprint
+        bit(7):ultra low power aod
+********************************************/
+	u32 fp_type;
 };
 #endif /* CONFIG_OPLUS_SYSTEM_CHANGE */
 
@@ -324,6 +345,7 @@ struct dsi_panel {
 
 	int panel_test_gpio;
 	int power_mode;
+	bool is_secondary;
 	enum dsi_panel_physical_type panel_type;
 
 	struct dsi_tlmm_gpio *tlmm_gpio;

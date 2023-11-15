@@ -29,6 +29,7 @@
 
 #ifdef CONFIG_OPLUS_SYSTEM_CHANGE
 #include <soc/oplus/system/oplus_mm_kevent_fb.h>
+#include "../oplus/oplus_display_private_api.h"
 #endif /* CONFIG_OPLUS_SYSTEM_CHANGE */
 
 #define DSI_CTRL_DEFAULT_LABEL "MDSS DSI CTRL"
@@ -1546,6 +1547,7 @@ static void dsi_ctrl_validate_msg_flags(struct dsi_ctrl *dsi_ctrl,
 		*flags &= ~DSI_CTRL_CMD_ASYNC_WAIT;
 }
 /*#ifdef CONFIG_OPLUS_SYSTEM_CHANGE*/
+extern int oplus_dsi_log_type;
 static void print_cmd_desc(struct dsi_ctrl *dsi_ctrl, const struct mipi_dsi_msg *msg)
 {
       char buf[512];
@@ -1576,7 +1578,6 @@ static void print_cmd_desc(struct dsi_ctrl *dsi_ctrl, const struct mipi_dsi_msg 
       DSI_CTRL_ERR(dsi_ctrl, "%s\n", buf);
 }
 
-extern int dsi_cmd_log_enable;
 /*#endif*/
 /**
  * dsi_ctrl_clear_slave_dma_status -   API to clear slave DMA status
@@ -1625,7 +1626,7 @@ static int dsi_message_tx(struct dsi_ctrl *dsi_ctrl,
 	u8 *cmdbuf;
 
 	/*#ifdef CONFIG_OPLUS_SYSTEM_CHANGE*/
-        if (dsi_cmd_log_enable)
+        if (OPLUS_DEBUG_LOG_CMD & oplus_dsi_log_type)
             print_cmd_desc(dsi_ctrl, msg);
 	/*#endif*/
 
