@@ -126,8 +126,6 @@ struct msm_kms_funcs {
 			struct drm_atomic_state *state);
 	/* check for continuous splash status */
 	bool (*check_for_splash)(struct msm_kms *kms, struct drm_crtc *crtc);
-	/*trigger null flush if stuck in cont splash*/
-	int (*trigger_null_flush)(struct msm_kms *kms);
 	/* topology lm information */
 	int (*get_mixer_count)(const struct msm_kms *kms,
 			const struct drm_display_mode *mode,
@@ -150,12 +148,6 @@ struct msm_kms {
 	struct drm_client_dev client;
 };
 
-struct msm_commit {
-	uint32_t crtc_mask;
-	uint32_t plane_mask;
-	struct kthread_work commit_work;
-};
-
 /**
  * Subclass of drm_atomic_state, to allow kms backend to have driver
  * private global state.  The kms backend can do whatever it wants
@@ -164,17 +156,7 @@ struct msm_commit {
  */
 struct msm_kms_state {
 	struct drm_atomic_state base;
-	struct msm_commit commit;
-	/*
-	 * Everything below `commit` may not be allocated in the struct. The
-	 * `crtcs` member must come right after `commit`, as its placement is
-	 * used to determine if the struct was partially allocated or fully
-	 * allocated.
-	 */
-	struct __drm_crtcs_state crtcs[MAX_CRTCS];
-	struct __drm_connnectors_state connectors[MAX_CONNECTORS];
-	struct __drm_planes_state planes[MAX_PLANES];
-	struct llist_node llist;
+	void *state;
 };
 #define to_kms_state(x) container_of(x, struct msm_kms_state, base)
 

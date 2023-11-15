@@ -575,13 +575,13 @@ struct sde_connector {
 
 #ifdef CONFIG_OPLUS_SYSTEM_CHANGE
 struct dc_apollo_pcc_sync {
-        wait_queue_head_t bk_wait;
-        int dc_pcc_updated;
-        __u32 pcc;
-        __u32 pcc_last;
-        __u32 pcc_current;
-        struct mutex lock;
-        int backlight_pending;
+	wait_queue_head_t bk_wait;
+	int dc_pcc_updated;
+	__u32 pcc;
+	__u32 pcc_last;
+	__u32 pcc_current;
+	struct mutex lock;
+	int backlight_pending;
 };
 #endif
 
@@ -1143,12 +1143,6 @@ int sde_connector_get_panel_vfp(struct drm_connector *connector,
  * @connector: Pointer to DRM connector object
  */
 int sde_connector_esd_status(struct drm_connector *connector);
-
-/**
- * sde_connector_helper_post_kickoff - helper function for drm connector post kickoff
- * @connector: Pointer to DRM connector object
- */
-void sde_connector_helper_post_kickoff(struct drm_connector *connector);
 
 #ifdef CONFIG_OPLUS_SYSTEM_CHANGE
 int _sde_connector_update_bl_scale_(struct sde_connector *c_conn);

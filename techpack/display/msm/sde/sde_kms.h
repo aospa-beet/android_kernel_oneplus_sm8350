@@ -21,7 +21,6 @@
 
 #include <linux/msm_ion.h>
 #include <linux/pm_domain.h>
-#include <linux/pm_qos.h>
 
 #include "msm_drv.h"
 #include "msm_kms.h"
@@ -40,6 +39,9 @@
 #include "sde_power_handle.h"
 #include "sde_irq.h"
 #include "sde_core_perf.h"
+#ifdef CONFIG_OPLUS_SYSTEM_CHANGE
+#include <soc/oplus/system/oplus_project.h>
+#endif /* CONFIG_OPLUS_SYSTEM_CHANGE */
 
 #define DRMID(x) ((x) ? (x)->base.id : -1)
 
@@ -296,11 +298,6 @@ struct sde_kms {
 	bool first_kickoff;
 	bool qdss_enabled;
 	bool pm_suspend_clk_dump;
-
-	cpumask_t irq_cpu_mask;
-	atomic_t irq_vote_count;
-	struct dev_pm_qos_request pm_qos_irq_req[NR_CPUS];
-	struct irq_affinity_notify affinity_notify;
 
 	struct sde_vm *vm;
 };
@@ -677,14 +674,6 @@ void sde_kms_timeline_status(struct drm_device *dev);
 int sde_kms_handle_recovery(struct drm_encoder *encoder);
 
 /**
- * sde_kms_cpu_vote_for_irq() - API to keep pm_qos latency vote on cpu
- * where mdss_irq is scheduled
- * @sde_kms: pointer to sde_kms structure
- * @enable: true if enable request, false otherwise.
- */
-void sde_kms_cpu_vote_for_irq(struct sde_kms *sde_kms, bool enable);
-
-/**
  * sde_kms_get_io_resources() - reads associated register range
  * @kms: pointer to sde_kms structure
  * @io_res: pointer to msm_io_res struct to populate the ranges
@@ -745,4 +734,13 @@ int sde_kms_vm_trusted_prepare_commit(struct sde_kms *sde_kms,
  */
 int sde_kms_vm_primary_prepare_commit(struct sde_kms *sde_kms,
 					   struct drm_atomic_state *state);
+
+/**
+ * sde_kms_trigger_early_wakeup - trigger early wake up
+ * @sde_kms: pointer to sde_kms structure
+ * @crtc: pointer to drm_crtc structure
+ */
+void sde_kms_trigger_early_wakeup(struct sde_kms *sde_kms,
+		struct drm_crtc *crtc);
+
 #endif /* __sde_kms_H__ */

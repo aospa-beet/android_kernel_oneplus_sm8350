@@ -7,6 +7,7 @@
 #include "sde_dsc_helper.h"
 #include "sde_kms.h"
 
+
 #define SDE_DSC_PPS_SIZE       128
 
 enum sde_dsc_ratio_type {
@@ -222,16 +223,15 @@ int sde_dsc_populate_dsc_config(struct drm_dsc_config *dsc, int scr_ver) {
 
 	dsc->rc_model_size = 8192;
 
-//#ifdef CONFIG_OPLUS_SYSTEM_CHANGE
-	if ((dsc->dsc_version_major == 0x1) && (dsc->dsc_version_minor == 0x1)) {
+	if ((dsc->dsc_version_major == 0x1) &&
+			(dsc->dsc_version_minor == 0x1)) {
 		if (scr_ver == 0x1)
 			dsc->first_line_bpg_offset = 15;
 		else
 			dsc->first_line_bpg_offset = 12;
 	} else if (dsc->dsc_version_minor == 0x2) {
-			dsc->first_line_bpg_offset = _get_dsc_v1_2_bpg_offset(dsc);
+		dsc->first_line_bpg_offset = _get_dsc_v1_2_bpg_offset(dsc);
 	}
-//#endif
 
 	dsc->rc_edge_factor = 6;
 	dsc->rc_tgt_offset_high = 3;

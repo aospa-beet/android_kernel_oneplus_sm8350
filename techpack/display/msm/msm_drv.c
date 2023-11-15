@@ -39,6 +39,7 @@
 
 #include <linux/of_address.h>
 #include <linux/kthread.h>
+#include <linux/workqueue.h>
 #include <uapi/linux/sched/types.h>
 #include <drm/drm_of.h>
 #include <drm/drm_auth.h>
@@ -50,10 +51,17 @@
 #include "msm_mmu.h"
 #include "sde_wb.h"
 #include "sde_dbg.h"
+#include "sde/sde_encoder.h"
 
 #ifdef CONFIG_OPLUS_SYSTEM_CHANGE
 #include "oplus_adfr.h"
 #endif
+
+#if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
+#ifdef CONFIG_OPLUS_CRTC_COMMIT_MUTEX_OPT
+#include <linux/sched_assist/sched_assist_common.h>
+#endif
+#endif /* defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST) */
 
 /*
  * MSM driver version:
@@ -71,6 +79,9 @@
 #define MSM_VERSION_PATCHLEVEL	0
 
 #define LASTCLOSE_TIMEOUT_MS	500
+
+#define IDLE_ENCODER_MASK_DEFAULT	2
+#define IDLE_TIMEOUT_MS_DEFAULT		100 - IDLE_POWERCOLLAPSE_DURATION
 
 #define msm_wait_event_timeout(waitq, cond, timeout_ms, ret)		\
 	do {								\
@@ -641,6 +652,20 @@ static int msm_drm_display_thread_create(struct sched_param param,
 			priv->disp_thread[i].thread = NULL;
 		}
 
+#if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
+#ifdef CONFIG_OPLUS_CRTC_COMMIT_MUTEX_OPT
+		/*
+		 * These crtc_commit core RT threads compete with CFS
+		 * thread for mutex lock and is blocked by CFS thread.
+		 * Which is a wrong usage from the scheduling point of
+		 * view, but driver side cannot be optimized in time.
+		 * So, it is optimized by using UX's mutex inheritance.
+		 */
+		if (priv->disp_thread[i].thread)
+			set_heavy_ux(priv->disp_thread[i].thread);
+#endif
+#endif /* defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST) */
+
 		/* initialize event thread */
 		priv->event_thread[i].crtc_id = priv->crtcs[i]->base.id;
 		kthread_init_worker(&priv->event_thread[i].worker);
@@ -778,6 +803,158 @@ static struct msm_kms *_msm_drm_component_init_helper(
 	return kms;
 }
 
+static ssize_t idle_encoder_mask_store(struct device *device,
+			       struct device_attribute *attr,
+			       const char *buf, size_t count)
+{
+	struct drm_device *ddev = dev_get_drvdata(device);
+	struct msm_drm_private *priv = ddev->dev_private;
+	struct msm_idle *idle = &priv->idle;
+	u32 encoder_mask = 0;
+	int rc;
+	unsigned long flags;
+
+	rc = kstrtouint(buf, 0, &encoder_mask);
+	if (rc)
+		return rc;
+
+	spin_lock_irqsave(&idle->lock, flags);
+	idle->encoder_mask = encoder_mask;
+	idle->active_mask &= encoder_mask;
+	spin_unlock_irqrestore(&idle->lock, flags);
+
+	return count;
+}
+
+static ssize_t idle_encoder_mask_show(struct device *device,
+			      struct device_attribute *attr,
+			      char *buf)
+{
+	struct drm_device *ddev = dev_get_drvdata(device);
+	struct msm_drm_private *priv = ddev->dev_private;
+	struct msm_idle *idle = &priv->idle;
+
+	return snprintf(buf, PAGE_SIZE, "0x%x\n", idle->encoder_mask);
+}
+
+static ssize_t idle_timeout_ms_store(struct device *device,
+			       struct device_attribute *attr,
+			       const char *buf, size_t count)
+{
+	struct drm_device *ddev = dev_get_drvdata(device);
+	struct msm_drm_private *priv = ddev->dev_private;
+	struct msm_idle *idle = &priv->idle;
+	u32 timeout_ms = 0;
+	int rc;
+	unsigned long flags;
+
+	rc = kstrtouint(buf, 10, &timeout_ms);
+	if (rc)
+		return rc;
+
+	spin_lock_irqsave(&idle->lock, flags);
+	idle->timeout_ms = timeout_ms;
+	spin_unlock_irqrestore(&idle->lock, flags);
+
+	return count;
+}
+
+static ssize_t idle_timeout_ms_show(struct device *device,
+			      struct device_attribute *attr,
+			      char *buf)
+{
+	struct drm_device *ddev = dev_get_drvdata(device);
+	struct msm_drm_private *priv = ddev->dev_private;
+	struct msm_idle *idle = &priv->idle;
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", idle->timeout_ms);
+}
+
+static ssize_t idle_state_show(struct device *device,
+			      struct device_attribute *attr,
+			      char *buf)
+{
+	struct drm_device *ddev = dev_get_drvdata(device);
+	struct msm_drm_private *priv = ddev->dev_private;
+	struct msm_idle *idle = &priv->idle;
+	const char *state;
+	u32 active_mask = READ_ONCE(idle->active_mask);
+
+	if (active_mask) {
+		state = "active";
+		return scnprintf(buf, PAGE_SIZE, "%s (0x%x)\n",
+				 state, active_mask);
+	} else if (delayed_work_pending(&idle->work))
+		state = "pending";
+	else
+		state = "idle";
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", state);
+}
+
+static DEVICE_ATTR_RW(idle_encoder_mask);
+static DEVICE_ATTR_RW(idle_timeout_ms);
+static DEVICE_ATTR_RO(idle_state);
+
+static const struct attribute *msm_idle_attrs[] = {
+	&dev_attr_idle_encoder_mask.attr,
+	&dev_attr_idle_timeout_ms.attr,
+	&dev_attr_idle_state.attr,
+	NULL
+};
+
+static void msm_idle_work(struct work_struct *work)
+{
+	struct delayed_work *dw = to_delayed_work(work);
+	struct msm_idle *idle = container_of(dw, struct msm_idle, work);
+	struct msm_drm_private *priv = container_of(idle,
+					struct msm_drm_private, idle);
+
+	if (!idle->active_mask)
+		sysfs_notify(&priv->dev->dev->kobj, NULL, "idle_state");
+}
+
+void msm_idle_set_state(struct drm_encoder *encoder, bool active)
+{
+	struct drm_device *ddev = encoder->dev;
+	struct msm_drm_private *priv = ddev->dev_private;
+	struct msm_idle *idle = &priv->idle;
+	unsigned int mask = 1 << drm_encoder_index(encoder);
+	unsigned long flags;
+
+	spin_lock_irqsave(&idle->lock, flags);
+
+	if (mask & idle->encoder_mask) {
+		if (active)
+			idle->active_mask |= mask;
+		else
+			idle->active_mask &= ~mask;
+
+		if (idle->timeout_ms && !idle->active_mask)
+			mod_delayed_work(system_wq, &idle->work,
+					 msecs_to_jiffies(idle->timeout_ms));
+		else
+			cancel_delayed_work(&idle->work);
+	}
+	spin_unlock_irqrestore(&idle->lock, flags);
+}
+
+static void msm_idle_init(struct drm_device *ddev)
+{
+	struct msm_drm_private *priv = ddev->dev_private;
+	struct msm_idle *idle = &priv->idle;
+
+	if (sysfs_create_files(&ddev->dev->kobj, msm_idle_attrs) < 0)
+		pr_warn("failed to create idle state file");
+
+	idle->active_mask = 0;
+	idle->encoder_mask = IDLE_ENCODER_MASK_DEFAULT;
+	idle->timeout_ms = IDLE_TIMEOUT_MS_DEFAULT;
+
+	INIT_DELAYED_WORK(&idle->work, msm_idle_work);
+	spin_lock_init(&idle->lock);
+}
+
 static int msm_drm_device_init(struct platform_device *pdev,
 		struct drm_driver *drv)
 {
@@ -815,6 +992,8 @@ static int msm_drm_device_init(struct platform_device *pdev,
 		dev_err(dev, "failed to init sde dbg: %d\n", ret);
 		goto dbg_init_fail;
 	}
+
+	msm_idle_init(ddev);
 
 	pm_runtime_enable(dev);
 
@@ -864,6 +1043,10 @@ static int msm_drm_component_init(struct device *dev)
 	INIT_LIST_HEAD(&priv->vm_client_list);
 
 	mutex_init(&priv->vm_client_lock);
+
+#ifdef CONFIG_OPLUS_SYSTEM_CHANGE
+	mutex_init(&priv->dspp_lock);
+#endif /* CONFIG_OPLUS_SYSTEM_CHANGE */
 
 	/* Bind all our sub-components: */
 	ret = msm_component_bind_all(dev, ddev);
@@ -1065,19 +1248,8 @@ static void msm_lastclose(struct drm_device *dev)
 	 * commit then ignore the last close call
 	 */
 	if (kms->funcs && kms->funcs->check_for_splash
-		&& kms->funcs->check_for_splash(kms, NULL)) {
-		msm_wait_event_timeout(priv->pending_crtcs_event, !priv->pending_crtcs,
-			LASTCLOSE_TIMEOUT_MS, rc);
-		if (!rc)
-			DRM_INFO("wait for crtc mask 0x%x failed, commit anyway...\n",
-				priv->pending_crtcs);
-
-		rc = kms->funcs->trigger_null_flush(kms);
-		if (rc) {
-			DRM_ERROR("null flush commit failure during lastclose\n");
-			return;
-		}
-	}
+		&& kms->funcs->check_for_splash(kms, NULL))
+		return;
 
 	/*
 	 * clean up vblank disable immediately as this is the last close.
@@ -1577,15 +1749,8 @@ static int msm_release(struct inode *inode, struct file *filp)
 	 * refcount > 1. This operation is not triggered from upstream
 	 * drm as msm_driver does not support DRIVER_LEGACY feature.
 	 */
-	if (drm_is_current_master(file_priv)) {
-		msm_wait_event_timeout(priv->pending_crtcs_event, !priv->pending_crtcs,
-			LASTCLOSE_TIMEOUT_MS, ret);
-		if (!ret)
-			DRM_INFO("wait for crtc mask 0x%x failed, commit anyway...\n",
-				priv->pending_crtcs);
-
+	if (drm_is_current_master(file_priv))
 		msm_preclose(dev, file_priv);
-	}
 
 	ret = drm_release(inode, filp);
 	filp->private_data = NULL;
@@ -2262,7 +2427,6 @@ static struct platform_driver msm_platform_driver = {
 		.of_match_table = dt_match,
 		.pm     = &msm_pm_ops,
 		.suppress_bind_attrs = true,
-		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
 	},
 };
 
@@ -2288,7 +2452,6 @@ static int __init msm_drm_register(void)
 static void __exit msm_drm_unregister(void)
 {
 	DBG("fini");
-
 	platform_driver_unregister(&msm_platform_driver);
 	sde_wb_unregister();
 	msm_hdmi_unregister();

@@ -191,10 +191,6 @@ struct sde_encoder_ops {
  *				after power collapse
  * @valid_cpu_mask:		actual voted cpu core mask
  * @mode_info:                  stores the current mode and should be used
- * @delay_kickoff      boolean to delay the kickoff, used in case
- *             of esd attack to ensure esd workqueue detects
- *             the previous frame transfer completion before
- *             next update is triggered.
  *				only in commit phase
  * @delay_kickoff		boolean to delay the kickoff, used in case
  *				of esd attack to ensure esd workqueue detects
@@ -668,5 +664,11 @@ static inline bool sde_encoder_is_widebus_enabled(struct drm_encoder *drm_enc)
 	sde_enc = to_sde_encoder_virt(drm_enc);
 	return sde_enc->mode_info.wide_bus_en;
 }
+
+/**
+ * sde_encoder_trigger_early_wakeup - trigger early wake up
+ * @drm_enc:    Pointer to drm encoder structure
+ */
+void sde_encoder_trigger_early_wakeup(struct drm_encoder *drm_enc);
 
 #endif /* __SDE_ENCODER_H__ */

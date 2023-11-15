@@ -288,7 +288,7 @@ static void sde_encoder_phys_cmd_te_rd_ptr_irq(void *arg, int irq_idx)
 	}
 	spin_unlock_irqrestore(phys_enc->enc_spinlock, lock_flags);
 
-	sde_encoder_helper_get_pp_line_count(phys_enc->parent, info, WRITE);
+	sde_encoder_helper_get_pp_line_count(phys_enc->parent, info);
 	SDE_EVT32_IRQ(DRMID(phys_enc->parent),
 		info[0].pp_idx, info[0].intf_idx,
 		info[0].wr_ptr_line_count, info[0].intf_frame_count,
@@ -355,7 +355,7 @@ static void sde_encoder_phys_cmd_wr_ptr_irq(void *arg, int irq_idx)
 		}
 	}
 
-	sde_encoder_helper_get_pp_line_count(phys_enc->parent, info, WRITE);
+	sde_encoder_helper_get_pp_line_count(phys_enc->parent, info);
 	SDE_EVT32_IRQ(DRMID(phys_enc->parent),
 		ctl->idx - CTL_0, event,
 		info[0].pp_idx, info[0].intf_idx, info[0].wr_ptr_line_count,
@@ -573,7 +573,8 @@ static int _sde_encoder_phys_cmd_handle_ppdone_timeout(
 				phys_enc->hw_ctl->idx - CTL_0,
 				pending_kickoff_cnt);
 #ifdef CONFIG_OPLUS_SYSTEM_CHANGE
-				mm_fb_display_kevent("ppdone timeout failed", MM_FB_KEY_RATELIMIT_NONE, "pp:%d kickoff timeout", phys_enc->hw_pp->idx - PINGPONG_0);
+		mm_fb_display_kevent("DisplayDriverID@@403$$", MM_FB_KEY_RATELIMIT_NONE,
+				"ppdone timeout failed pp:%d kickoff timeout", phys_enc->hw_pp->idx - PINGPONG_0);
 #endif /* CONFIG_OPLUS_SYSTEM_CHANGE */
 
 		SDE_EVT32(DRMID(phys_enc->parent), SDE_EVTLOG_FATAL);
@@ -639,8 +640,11 @@ static bool _sde_encoder_phys_is_disabling_ppsplit_slave(
 static int _sde_encoder_phys_cmd_poll_write_pointer_started(
 		struct sde_encoder_phys *phys_enc)
 {
+	struct sde_encoder_phys_cmd *cmd_enc =
+			to_sde_encoder_phys_cmd(phys_enc);
 	struct sde_hw_pingpong *hw_pp = phys_enc->hw_pp;
 	struct sde_hw_intf *hw_intf = phys_enc->hw_intf;
+	struct sde_hw_pp_vsync_info info;
 	u32 timeout_us = SDE_ENC_WR_PTR_START_TIMEOUT_US;
 	int ret = 0;
 
@@ -656,6 +660,25 @@ static int _sde_encoder_phys_cmd_poll_write_pointer_started(
 				!hw_pp->ops.poll_timeout_wr_ptr)
 			goto end;
 	}
+
+	if (phys_enc->has_intf_te)
+		ret = hw_intf->ops.get_vsync_info(hw_intf, &info);
+	else
+		ret = hw_pp->ops.get_vsync_info(hw_pp, &info);
+
+	if (ret)
+		return ret;
+
+	SDE_DEBUG_CMDENC(cmd_enc,
+			"pp:%d intf:%d rd_ptr %d wr_ptr %d\n",
+			phys_enc->hw_pp->idx - PINGPONG_0,
+			phys_enc->hw_intf->idx - INTF_0,
+			info.rd_ptr_line_count,
+			info.wr_ptr_line_count);
+	SDE_EVT32_VERBOSE(DRMID(phys_enc->parent),
+			phys_enc->hw_pp->idx - PINGPONG_0,
+			phys_enc->hw_intf->idx - INTF_0,
+			info.wr_ptr_line_count);
 
 	if (phys_enc->has_intf_te)
 		ret = hw_intf->ops.poll_timeout_wr_ptr(hw_intf, timeout_us);
@@ -690,13 +713,13 @@ static bool _sde_encoder_phys_cmd_is_ongoing_pptx(
 		if (!hw_intf || !hw_intf->ops.get_vsync_info)
 			return false;
 
-		hw_intf->ops.get_vsync_info(hw_intf, &info, WRITE);
+		hw_intf->ops.get_vsync_info(hw_intf, &info);
 	} else {
 		hw_pp = phys_enc->hw_pp;
 		if (!hw_pp || !hw_pp->ops.get_vsync_info)
 			return false;
 
-		hw_pp->ops.get_vsync_info(hw_pp, &info, WRITE);
+		hw_pp->ops.get_vsync_info(hw_pp, &info);
 	}
 
 	SDE_EVT32(DRMID(phys_enc->parent),
@@ -1005,24 +1028,6 @@ static int _get_tearcheck_threshold(struct sde_encoder_phys *phys_enc)
 
 		threshold_lines = extra_time_ns / default_line_time_ns;
 
-#ifdef CONFIG_OPLUS_SYSTEM_CHANGE
-		if (oplus_adfr_is_support()) {
-			if (qsync_min_fps == 51) {
-				if (yres > 3216) {
-					threshold_lines = threshold_lines - 39 - 47 - 58;
-				} else {
-					threshold_lines = threshold_lines - 29 - 35 - 43;
-				}
-			} else {
-				if (yres > 3216) {
-					threshold_lines = threshold_lines - 47 - 58;
-				} else {
-					threshold_lines = threshold_lines - 35 - 43;
-				}
-			}
-		}
-#endif
-
 		/* round down to nearest multiple of 4 to compensate for rounding in DDIC */
 		threshold_lines &= ~(4 - 1);
 		/* additional compensation for latency */
@@ -1250,21 +1255,13 @@ static void sde_encoder_phys_cmd_enable(struct sde_encoder_phys *phys_enc)
 static bool sde_encoder_phys_cmd_is_autorefresh_enabled(
 		struct sde_encoder_phys *phys_enc)
 {
-	struct sde_encoder_phys_cmd *cmd_enc;
 	struct sde_hw_pingpong *hw_pp;
 	struct sde_hw_intf *hw_intf;
 	struct sde_hw_autorefresh cfg;
 	int ret;
 
-	if (!phys_enc)
-		return 0;
-
-	cmd_enc = to_sde_encoder_phys_cmd(phys_enc);
-	if (!cmd_enc->autorefresh.cfg.enable)
-		return 0;
-
-	if (!phys_enc->hw_pp || !phys_enc->hw_intf)
-		return 0;
+	if (!phys_enc || !phys_enc->hw_pp || !phys_enc->hw_intf)
+		return false;
 
 	if (!sde_encoder_phys_cmd_is_master(phys_enc))
 		return false;
@@ -1356,14 +1353,14 @@ static int sde_encoder_phys_cmd_get_write_line_count(
 		if (!hw_intf->ops.get_vsync_info)
 			return -EINVAL;
 
-		if (hw_intf->ops.get_vsync_info(hw_intf, &info, WRITE))
+		if (hw_intf->ops.get_vsync_info(hw_intf, &info))
 			return -EINVAL;
 	} else {
 		hw_pp = phys_enc->hw_pp;
 		if (!hw_pp->ops.get_vsync_info)
 			return -EINVAL;
 
-		if (hw_pp->ops.get_vsync_info(hw_pp, &info, WRITE))
+		if (hw_pp->ops.get_vsync_info(hw_pp, &info))
 			return -EINVAL;
 	}
 
@@ -1732,7 +1729,8 @@ static int _sde_encoder_phys_cmd_handle_wr_ptr_timeout(
 			"wr_ptr_irq wait failed, switch_te:%d\n", switch_te);
 		SDE_EVT32(DRMID(phys_enc->parent), switch_te, SDE_EVTLOG_ERROR);
 #ifdef CONFIG_OPLUS_SYSTEM_CHANGE
-		mm_fb_display_kevent("wr_ptr_irq timeout failed", MM_FB_KEY_RATELIMIT_30MIN, "switch_te:%d", switch_te);
+		mm_fb_display_kevent("DisplayDriverID@@418$$", MM_FB_KEY_RATELIMIT_30MIN,
+				"wr_ptr_irq timeout failed switch_te:%d", switch_te);
 #endif
 
 		if (sde_encoder_phys_cmd_is_master(phys_enc) &&
@@ -2033,7 +2031,7 @@ static void sde_encoder_phys_cmd_trigger_start(
 	mode = &phys_enc->cached_mode;
 	if (mode && sde_connector_get_qsync_mode(conn)) {
 		threshold_lines = _get_tearcheck_threshold(phys_enc);
-		sde_encoder_helper_get_pp_line_count(phys_enc->parent, info, READ);
+		sde_encoder_helper_get_pp_line_count(phys_enc->parent, info);
 		curr_rd_ptr_line_count = info[0].rd_ptr_line_count;
 
 		/*

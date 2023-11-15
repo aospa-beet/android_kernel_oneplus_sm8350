@@ -441,9 +441,9 @@ static void dsi_ctrl_dma_cmd_wait_for_done(struct work_struct *work)
 				DSI_CTRL_WARN(dsi_ctrl, "dsi_ctrl cmd dma done irq stat refcount[%d] Unexpected, repair it\n",
 				dsi_ctrl->irq_info.irq_stat_refcount[DSI_SINT_CMD_MODE_DMA_DONE]);
 				dsi_ctrl_disable_status_interrupt(dsi_ctrl, DSI_SINT_CMD_MODE_DMA_DONE);
-				mm_fb_display_kevent("dma_tx irq trigger fixup", MM_FB_KEY_RATELIMIT_NONE, "irq status=%x", status);
+				mm_fb_display_kevent("DisplayDriverID@@405$$", MM_FB_KEY_RATELIMIT_NONE, "dma_tx irq trigger fixup irq status=%x", status);
 			}
-			mm_fb_display_kevent("dma_tx irq trigger err", MM_FB_KEY_RATELIMIT_1H, "irq status=%x", status);
+			mm_fb_display_kevent("DisplayDriverID@@413$$", MM_FB_KEY_RATELIMIT_1H, "dma_tx irq trigger err irq status=%x", status);
 #endif
 
 		} else {
@@ -1090,7 +1090,7 @@ static int dsi_ctrl_enable_supplies(struct dsi_ctrl *dsi_ctrl, bool enable)
 			DSI_CTRL_ERR(dsi_ctrl,
 				"Power resource enable failed, rc=%d\n", rc);
 #ifdef CONFIG_OPLUS_SYSTEM_CHANGE
-			DSI_CTRL_MM_ERR(dsi_ctrl, "Power resource enable failed, rc=%d\n", rc);
+			DSI_CTRL_MM_ERR(dsi_ctrl, "DisplayDriverID@@406$$Power resource enable failed, rc=%d\n", rc);
 #endif
 			goto error;
 		}
@@ -1101,7 +1101,7 @@ static int dsi_ctrl_enable_supplies(struct dsi_ctrl *dsi_ctrl, bool enable)
 			if (rc) {
 				DSI_CTRL_ERR(dsi_ctrl, "failed to enable host power regs\n");
 #ifdef CONFIG_OPLUS_SYSTEM_CHANGE
-				DSI_CTRL_MM_ERR(dsi_ctrl, "failed to enable host power regs\n");
+				DSI_CTRL_MM_ERR(dsi_ctrl, "DisplayDriverID@@406$$failed to enable host power regs\n");
 #endif
 				goto error_get_sync;
 			}
@@ -1548,6 +1548,7 @@ static void dsi_ctrl_validate_msg_flags(struct dsi_ctrl *dsi_ctrl,
 }
 /*#ifdef CONFIG_OPLUS_SYSTEM_CHANGE*/
 extern int oplus_dsi_log_type;
+extern int no_clear_slave_dma;
 static void print_cmd_desc(struct dsi_ctrl *dsi_ctrl, const struct mipi_dsi_msg *msg)
 {
       char buf[512];
@@ -1626,8 +1627,8 @@ static int dsi_message_tx(struct dsi_ctrl *dsi_ctrl,
 	u8 *cmdbuf;
 
 	/*#ifdef CONFIG_OPLUS_SYSTEM_CHANGE*/
-        if (OPLUS_DEBUG_LOG_CMD & oplus_dsi_log_type)
-            print_cmd_desc(dsi_ctrl, msg);
+	if (OPLUS_DEBUG_LOG_CMD & oplus_dsi_log_type)
+		print_cmd_desc(dsi_ctrl, msg);
 	/*#endif*/
 
 	/* Select the tx mode to transfer the command */
@@ -1649,9 +1650,15 @@ static int dsi_message_tx(struct dsi_ctrl *dsi_ctrl,
 	if (dsi_ctrl->dma_wait_queued)
 		dsi_ctrl_flush_cmd_dma_queue(dsi_ctrl);
 
+#ifndef CONFIG_OPLUS_SYSTEM_CHANGE
+/* PSW.MM.Display.LCD.Stability, 2021/11/17, add for skip clear dma if no need */
 	if ((*flags & DSI_CTRL_CMD_BROADCAST) &&
 			(!(*flags & DSI_CTRL_CMD_BROADCAST_MASTER)))
 		dsi_ctrl_clear_slave_dma_status(dsi_ctrl, *flags);
+#else
+	if ((!(*flags & DSI_CTRL_CMD_BROADCAST_MASTER)) && (no_clear_slave_dma == 0))
+		dsi_ctrl_clear_slave_dma_status(dsi_ctrl, *flags);
+#endif /* CONFIG_OPLUS_SYSTEM_CHANGE */
 
 	if (*flags & DSI_CTRL_CMD_NON_EMBEDDED_MODE) {
 		cmd_mem.offset = dsi_ctrl->cmd_buffer_iova;
@@ -3042,7 +3049,6 @@ static irqreturn_t dsi_ctrl_isr(int irq, void *ptr)
 static int _dsi_ctrl_setup_isr(struct dsi_ctrl *dsi_ctrl)
 {
 	int irq_num, rc;
-	uint32_t intr_idx;
 
 	if (!dsi_ctrl)
 		return -EINVAL;
@@ -3053,19 +3059,6 @@ static int _dsi_ctrl_setup_isr(struct dsi_ctrl *dsi_ctrl)
 	init_completion(&dsi_ctrl->irq_info.vid_frame_done);
 	init_completion(&dsi_ctrl->irq_info.cmd_frame_done);
 	init_completion(&dsi_ctrl->irq_info.bta_done);
-
-	/* If there is unbalanced refcount for any interrupt, irq_stat_mask
-	* remain non zero on suspend. Due to this, enable_irq does not get
-	* called on resume, leading to ctrl ISR permanently disabled.
-	* This is a defensive check to recover from such scenario.
-	*/
-	for (intr_idx = 0; intr_idx < DSI_STATUS_INTERRUPT_COUNT; intr_idx++) {
-		if (dsi_ctrl->irq_info.irq_stat_refcount[intr_idx]) {
-			DSI_CTRL_ERR(dsi_ctrl, "refcount mismatch: intr_idx %d\n", intr_idx);
-			dsi_ctrl->irq_info.irq_stat_refcount[intr_idx] = 0;
-		}
-	}
-	dsi_ctrl->irq_info.irq_stat_mask = 0x0;
 
 	irq_num = platform_get_irq(dsi_ctrl->pdev, 0);
 	if (irq_num < 0) {

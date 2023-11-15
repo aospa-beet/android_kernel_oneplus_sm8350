@@ -12,6 +12,7 @@ msm_drm-$(CONFIG_DRM_MSM_DP) += dp/dp_altmode.o \
 	dp/dp_catalog.o \
 	dp/dp_catalog_v420.o \
 	dp/dp_catalog_v200.o \
+	dp/dp_catalog_v500.o \
 	dp/dp_aux.o \
 	dp/dp_panel.o \
 	dp/dp_link.o \
@@ -27,7 +28,8 @@ msm_drm-$(CONFIG_DRM_MSM_DP) += dp/dp_altmode.o \
 	sde_hdcp_1x.o \
 	sde_hdcp_2x.o \
 	dp/dp_pll.o \
-	dp/dp_pll_5nm.o
+	dp/dp_pll_5nm.o \
+	dp/edp_pll_7nm.o
 
 msm_drm-$(CONFIG_DRM_MSM_DP_MST) += dp/dp_mst_drm.o
 
@@ -177,7 +179,9 @@ msm_drm-$(CONFIG_MSM_SDE_ROTATOR) += ../rotator/sde_rotator_dev.o \
 	../rotator/sde_rotator_r3_debug.o
 
 oplus_notify-$(CONFIG_DRM_OPLUS_NOTIFY) += ../oplus/oplus_notify.o
+oplus_lcm_brightness_notify-$(CONFIG_DRM_LCM_BRIGHTNESS_NOTIFY) += ../oplus/oplus_lcm_brightness_notify.o
 
 obj-$(CONFIG_DISPLAY_BUILD)	+= msm_drm.o
 obj-$(CONFIG_DRM_OPLUS_NOTIFY) += oplus_notify.o
 obj-$(CONFIG_DRM_FBDEV_EMULATION) += msm_fbdev.o
+obj-$(CONFIG_DRM_LCM_BRIGHTNESS_NOTIFY) += oplus_lcm_brightness_notify.o

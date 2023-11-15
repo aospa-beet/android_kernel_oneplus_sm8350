@@ -83,6 +83,8 @@ static struct dsi_display_boot_param boot_displays[MAX_DSI_ACTIVE_DISPLAY] = {
 	{.boot_param = dsi_display_secondary},
 };
 
+static unsigned int cur_refresh_rate = 60;
+
 static const struct of_device_id dsi_display_dt_match[] = {
 	{.compatible = "qcom,dsi-display"},
 	{}
@@ -243,6 +245,7 @@ void dsi_rect_intersect(const struct dsi_rect *r1,
 
 #ifdef CONFIG_OPLUS_SYSTEM_CHANGE
 extern int oplus_display_panel_get_id2(void);
+extern int dsi_update_dynamic_osc_clock(void);
 static int readcount = 0;
 #endif
 
@@ -268,6 +271,11 @@ int dsi_display_set_backlight(struct drm_connector *connector,
 		panel->panel_id2 = oplus_display_panel_get_id2();
 		pr_err("dsi_cmd oplus_display_panel_get_id2 %d\n",panel->panel_id2);
 		readcount = 1;
+
+		/* add for ffc */
+		if (!strcmp(panel->oplus_priv.vendor_name, "S6E3XA1") && (panel->panel_id2 > 6)) {
+			dsi_update_dynamic_osc_clock();
+		}
 	}
 #endif
 
@@ -898,6 +906,8 @@ static bool dsi_display_validate_reg_read(struct dsi_panel *panel)
 	if (rc <= 0) {
 		char payload[150] = "";
 		int cnt = 0;
+
+		cnt += scnprintf(payload + cnt, sizeof(payload) - cnt, "DisplayDriverID@@408$$");
 		cnt += scnprintf(payload + cnt, sizeof(payload) - cnt, "ESD:");
 		for (i = 0; i < len; ++i)
 			cnt += scnprintf(payload + cnt, sizeof(payload) - cnt, "[%02x] ", config->return_buf[i]);
@@ -6246,7 +6256,6 @@ static int dsi_display_bind(struct device *dev,
 	}
 
 #endif
-
 	goto error;
 
 error_host_deinit:
@@ -6372,6 +6381,11 @@ static int dsi_display_init(struct dsi_display *display)
 					display->panel->name, rc);
 			return rc;
 		}
+#ifdef CONFIG_OPLUS_SYSTEM_CHANGE
+		if (display->panel->oplus_priv.cabc_enabled) {
+			display->panel->oplus_priv.cabc_status = OPLUS_DISPLAY_CABC_UI;
+		}
+#endif /* CONFIG_OPLUS_SYSTEM_CHANGE */
 	}
 
 	rc = component_add(&pdev->dev, &dsi_display_comp_ops);
@@ -6491,6 +6505,7 @@ int dsi_display_dev_probe(struct platform_device *pdev)
 		primary_display = display;
 	else
 		secondary_display = display;
+	current_display = primary_display;
 #endif /* CONFIG_OPLUS_SYSTEM_CHANGE */
 
 	/* initialize display in firmware callback */
@@ -7469,7 +7484,6 @@ int dsi_display_get_modes(struct dsi_display *display,
 			display_mode.vsync_source = display->te_source;
 		}
 #endif
-
 		is_cmd_mode = (display_mode.panel_mode == DSI_OP_CMD_MODE);
 
 		/* Setup widebus support */
@@ -7805,9 +7819,17 @@ int dsi_display_validate_mode_change(struct dsi_display *display,
 					rc = -ENOTSUPP;
 					goto error;
 				}
-
+#ifdef CONFIG_OPLUS_SYSTEM_CHANGE
+				/* PSW.MM.Display.LCD,2021/8/20, dfps and dyn clk concurrent,skip dyn clk*/
+				if (cur_mode->timing.refresh_rate != adj_mode->timing.refresh_rate) {
+					pr_err("dfps and dyn clk concurrent, skip dyn clk!\n");
+				} else {
+					adj_mode->dsi_mode_flags |= DSI_MODE_FLAG_DYN_CLK;
+				}
+#else
 				adj_mode->dsi_mode_flags |=
 						DSI_MODE_FLAG_DYN_CLK;
+#endif /* CONFIG_OPLUS_SYSTEM_CHANGE */
 				SDE_EVT32(SDE_EVTLOG_FUNC_CASE2,
 					cur_mode->pixel_clk_khz,
 					adj_mode->pixel_clk_khz);
@@ -8785,6 +8807,11 @@ static void dsi_display_panel_id_notification(struct dsi_display *display)
 	}
 }
 
+unsigned int dsi_panel_get_refresh_rate(void)
+{
+	return READ_ONCE(cur_refresh_rate);
+}
+
 int dsi_display_enable(struct dsi_display *display)
 {
 	int rc = 0;
@@ -8828,6 +8855,7 @@ int dsi_display_enable(struct dsi_display *display)
 	mutex_lock(&display->display_lock);
 
 	mode = display->panel->cur_mode;
+	WRITE_ONCE(cur_refresh_rate, mode->timing.refresh_rate);
 
 	if (mode->dsi_mode_flags & DSI_MODE_FLAG_DMS) {
 		rc = dsi_panel_post_switch(display->panel);
@@ -8843,6 +8871,10 @@ int dsi_display_enable(struct dsi_display *display)
 			DSI_ERR("[%s] failed to enable DSI panel, rc=%d\n",
 			       display->name, rc);
 			goto error;
+		}
+		/* add for set current display */
+		{
+			set_current_display(display);
 		}
 	}
 	dsi_display_panel_id_notification(display);
@@ -9115,7 +9147,7 @@ int dsi_display_disable(struct dsi_display *display)
 	}
 
 #ifdef CONFIG_OPLUS_SYSTEM_CHANGE
-	/* if qsync mode is on, force qsync window to be closed to avoid tearing issue */
+    /* if qsync mode is on, force qsync window to be closed to avoid tearing issue */
     if (oplus_adfr_is_support()) {
         if (display->current_qsync_mode) {
             display->force_qsync_mode_off = true;
@@ -9299,11 +9331,11 @@ struct dsi_display *get_sec_display(void) {
 EXPORT_SYMBOL(get_sec_display);
 
 void set_current_display(struct dsi_display *display) {
-                current_display = display;
+		current_display = display;
 }
 EXPORT_SYMBOL(set_current_display);
 struct dsi_display *get_current_display(void) {
-                return current_display;
+		return current_display;
 }
 EXPORT_SYMBOL(get_current_display);
 

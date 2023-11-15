@@ -182,7 +182,11 @@ static void sde_hw_intf_avr_ctrl(struct sde_hw_intf *ctx,
 static inline void _check_and_set_comp_bit(struct sde_hw_intf *ctx,
 		bool dsc_4hs_merge, bool compression_en, u32 *intf_cfg2)
 {
-	if (compression_en)
+	if (((SDE_HW_MAJOR(ctx->mdss->hwversion) >=
+				SDE_HW_MAJOR(SDE_HW_VER_700)) &&
+				compression_en) ||
+			(IS_SDE_MAJOR_SAME(ctx->mdss->hwversion,
+				SDE_HW_VER_600) && dsc_4hs_merge))
 		(*intf_cfg2) |= BIT(12);
 }
 
@@ -687,7 +691,7 @@ static int sde_hw_intf_connect_external_te(struct sde_hw_intf *intf,
 }
 
 static int sde_hw_intf_get_vsync_info(struct sde_hw_intf *intf,
-		struct sde_hw_pp_vsync_info *info, int rw)
+		struct sde_hw_pp_vsync_info *info)
 {
 	struct sde_hw_blk_reg_map *c = &intf->hw;
 	u32 val;
@@ -697,20 +701,18 @@ static int sde_hw_intf_get_vsync_info(struct sde_hw_intf *intf,
 
 	c = &intf->hw;
 
-	if (rw == READ) {
-		val = SDE_REG_READ(c, INTF_TEAR_VSYNC_INIT_VAL);
-		info->rd_ptr_init_val = val & 0xffff;
+	val = SDE_REG_READ(c, INTF_TEAR_VSYNC_INIT_VAL);
+	info->rd_ptr_init_val = val & 0xffff;
 
-		val = SDE_REG_READ(c, INTF_TEAR_INT_COUNT_VAL);
-		info->rd_ptr_frame_count = (val & 0xffff0000) >> 16;
-		info->rd_ptr_line_count = val & 0xffff;
-	} else {
-		val = SDE_REG_READ(c, INTF_TEAR_LINE_COUNT);
-		info->wr_ptr_line_count = val & 0xffff;
+	val = SDE_REG_READ(c, INTF_TEAR_INT_COUNT_VAL);
+	info->rd_ptr_frame_count = (val & 0xffff0000) >> 16;
+	info->rd_ptr_line_count = val & 0xffff;
 
-		val = SDE_REG_READ(c, INTF_FRAME_COUNT);
-		info->intf_frame_count = val;
-	}
+	val = SDE_REG_READ(c, INTF_TEAR_LINE_COUNT);
+	info->wr_ptr_line_count = val & 0xffff;
+
+	val = SDE_REG_READ(c, INTF_FRAME_COUNT);
+	info->intf_frame_count = val;
 
 	return 0;
 }

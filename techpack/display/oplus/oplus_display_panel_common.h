@@ -74,6 +74,8 @@ struct panel_reg_rw {
 int oplus_display_panel_get_id(void *buf);
 int oplus_display_panel_get_max_brightness(void *buf);
 int oplus_display_panel_set_max_brightness(void *buf);
+int oplus_display_panel_get_lcd_max_brightness(void *buf);
+int oplus_display_panel_set_brightness(void *buf);
 int oplus_display_panel_get_brightness(void *buf);
 int oplus_display_panel_get_vendor(void *buf);
 int oplus_display_panel_get_ccd_check(void *buf);
@@ -106,5 +108,6 @@ int oplus_display_set_cabc_status(void *buf);
 int oplus_display_get_cabc_status(void *buf);
 int oplus_display_set_dre_status(void *buf);
 int oplus_display_get_dre_status(void *buf);
+int oplus_display_set_shutdown_flag(void *buf);
 #endif /*_OPLUS_DISPLAY_PANEL_COMMON_H_*/
 
