@@ -187,7 +187,7 @@ static const struct file_operations mtk_chg_##name##_fops = {		\
 #define CHG_BAT_LT_STATUS	(1 << 5)
 #define CHG_TYPEC_WD_STATUS	(1 << 6)
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 typedef enum {
 	NTC_BATTERY,
 	NTC_BATTERY_CON,
@@ -506,7 +506,7 @@ struct mtk_charger {
 	struct charger_device *chg1_dev;
 	struct notifier_block chg1_nb;
 	struct charger_device *chg2_dev;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct charger_device *dvchg1_dev;
 	struct notifier_block dvchg1_nb;
 	struct charger_data dvchg1_data;
@@ -531,7 +531,7 @@ struct mtk_charger {
 	struct adapter_device *pd_adapter;
 	struct notifier_block pd_nb;
 	struct mutex pd_lock;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct iio_channel      *charger_id_chan;
 	struct iio_channel      *usb_temp_v_l_chan;
 	struct iio_channel      *usb_temp_v_r_chan;
@@ -542,7 +542,7 @@ struct mtk_charger {
 	int step_chg_current;
 #endif
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	int ccdetect_gpio;
 	int ccdetect_irq;
 	struct pinctrl_state *ccdetect_active;
@@ -553,7 +553,7 @@ struct mtk_charger {
 	int pd_type;
 	bool pd_reset;
 	bool disable_pd_dual;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct tcpc_device *tcpc;
 #endif
 
@@ -634,11 +634,11 @@ struct mtk_charger {
 	struct chg_alg_device *alg[MAX_ALG_NO];
 	struct notifier_block chg_alg_nb;
 	bool enable_hv_charging;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	bool chargerid_disable;
 	bool chargerid_vol_disable;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct iio_channel *chg_temp_chan;
 	int chargeric_temp_volt;
 	int chargeric_temp;

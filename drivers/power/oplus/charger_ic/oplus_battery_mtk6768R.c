@@ -712,7 +712,7 @@ int charger_manager_enable_charging(struct charger_consumer *consumer,
 	struct charger_manager *info = consumer->cm;
 	int ret = 0;
 
-#if defined(OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
+#if defined(CONFIG_OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
 	return -EBUSY;
 #endif
 #if defined (CONFIG_OPLUS_CHARGER_MTK6769) || defined (CONFIG_OPLUS_CHARGER_MTK6768)
@@ -730,7 +730,7 @@ int charger_manager_set_input_current_limit(struct charger_consumer *consumer,
 {
 	struct charger_manager *info = consumer->cm;
 
-#if defined(OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
+#if defined(CONFIG_OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
 	return -EBUSY;
 #endif
 #if defined (CONFIG_OPLUS_CHARGER_MTK6769) || defined (CONFIG_OPLUS_CHARGER_MTK6768)
@@ -771,7 +771,7 @@ int charger_manager_set_charging_current_limit(
 {
 	struct charger_manager *info = consumer->cm;
 
-#if defined(OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
+#if defined(CONFIG_OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
 	return -EBUSY;
 #endif
 #if defined (CONFIG_OPLUS_CHARGER_MTK6769) || defined (CONFIG_OPLUS_CHARGER_MTK6768)
@@ -803,7 +803,7 @@ int charger_manager_get_charger_temperature(struct charger_consumer *consumer,
 {
 	struct charger_manager *info = consumer->cm;
 
-#if defined(OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
+#if defined(CONFIG_OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
 	return -EBUSY;
 #endif
 #if defined (CONFIG_OPLUS_CHARGER_MTK6769) || defined (CONFIG_OPLUS_CHARGER_MTK6768)
@@ -4413,7 +4413,7 @@ static int oplus_charger_probe(struct platform_device *pdev)
 	else
 		chr_err("*** Error : can't find PD adapter ***\n");
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	oplus_chg_configfs_init(oplus_chip);
 #endif
 
@@ -4496,7 +4496,7 @@ static int oplus_charger_probe(struct platform_device *pdev)
 
 static int oplus_charger_remove(struct platform_device *dev)
 {
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	oplus_chg_configfs_exit();
 #endif
 	return 0;

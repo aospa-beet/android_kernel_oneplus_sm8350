@@ -2151,7 +2151,7 @@ static struct device_attribute *oplus_common_attributes[] = {
 	&dev_attr_boot_completed,
 	NULL
 };
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 void __attribute__((weak)) oplus_pps_get_adapter_status(struct oplus_chg_chip *chip)
 {
 	return;

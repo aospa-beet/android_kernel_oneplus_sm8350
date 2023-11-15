@@ -41,7 +41,7 @@
 #include "oplus_bq2589x_reg.h"
 #include <linux/time.h>
 #include <mtk_musb.h>
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #include <soc/oplus/system/oplus_project.h>
 #endif
 

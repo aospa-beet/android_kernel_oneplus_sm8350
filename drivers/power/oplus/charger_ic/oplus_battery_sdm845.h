@@ -26,9 +26,9 @@ enum print_reason {
 	PR_OTG		= BIT(4),
 };
 
-#ifdef OPLUS_FEATURE_CHG_BASIC/*Fanhong.Kong@ProDrv.CHG,add 2018/06/02 for SVOOC OTG*/
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC/*Fanhong.Kong@ProDrv.CHG,add 2018/06/02 for SVOOC OTG*/
 #define SVOOC_OTG_VOTER		"SVOOC_OTG_VOTER"
-#endif/*OPLUS_FEATURE_CHG_BASIC*/
+#endif/*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
 #define DEFAULT_VOTER			"DEFAULT_VOTER"
 #define USER_VOTER			"USER_VOTER"
@@ -71,10 +71,10 @@ enum print_reason {
 #define PL_FCC_LOW_VOTER		"PL_FCC_LOW_VOTER"
 #define WBC_VOTER			"WBC_VOTER"
 #define MOISTURE_VOTER			"MOISTURE_VOTER"
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define CCDETECT_VOTER			"CCDETECT_VOTER"
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define PD_DIS_VOTER			"PD_DIS_VOTER"
 #endif
 
@@ -269,7 +269,7 @@ struct smb_charger {
 	struct power_supply		*bms_psy;
 	struct power_supply_desc	usb_psy_desc;
 	struct power_supply		*usb_main_psy;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct power_supply		*ac_psy;
 #endif
 	struct power_supply		*usb_port_psy;
@@ -321,10 +321,10 @@ struct smb_charger {
 	struct work_struct	legacy_detection_work;
 	struct delayed_work	uusb_otg_work;
 	struct delayed_work	bb_removal_work;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct delayed_work	chg_monitor_work;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct delayed_work	typec_disable_cmd_work;
 #endif
 
@@ -375,7 +375,7 @@ struct smb_charger {
 	int			boost_current_ua;
 	int			temp_speed_reading_count;
 	bool			fake_usb_insertion;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	bool			fake_typec_insertion;
 #endif
 
@@ -391,10 +391,10 @@ struct smb_charger {
 	int			pulse_cnt;
 
 	int			die_health;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	int			pre_current_ma;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	int			ccdetect_gpio;
 	int			ccdetect_irq;
 	struct pinctrl		*ccdetect_pinctrl;

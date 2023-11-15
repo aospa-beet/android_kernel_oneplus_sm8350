@@ -22,13 +22,13 @@
 #include <linux/soc/qcom/battery_charger.h>
 #include <oplus_chg_ic.h>
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #ifndef CONFIG_FB
 #define CONFIG_FB
 #endif
 #endif
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define OEM_OPCODE_READ_BUFFER    0x10000
 #define OEM_READ_WAIT_TIME_MS    500
 #define MAX_OEM_PROPERTY_DATA_SIZE 128
@@ -57,7 +57,7 @@
 #define BC_SHUTDOWN_NOTIFY		0x47
 #define BC_GENERIC_NOTIFY		0x80
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define BC_VOOC_STATUS_GET		0X48
 #define BC_VOOC_STATUS_SET		0X49
 #define BC_OTG_ENABLE			0x50
@@ -80,7 +80,7 @@
 #define BC_ADSP_NOTIFY_TRACK			0x66
 #endif
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define USB_OTG_CURR_LIMIT_MAX	3000
 #define USB_OTG_CURR_LIMIT_HIGH	1700
 #define USB_OTG_REAL_SOC_MIN	10
@@ -95,7 +95,7 @@
 #define DEFAULT_RESTRICT_FCC_UA		1000000
 #define BATTMNGR_EFAILED                512 /*Error: i2c Operation Failed*/
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 struct ntc_table_855 {
 	int temperature;	/* ohm */
 	int volt;		/* 0.1*celsius */
@@ -340,7 +340,7 @@ enum battery_property_id {
 	BATT_RESISTANCE,
 	BATT_POWER_NOW,
 	BATT_POWER_AVG,
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	BATT_CHG_EN,/* sjc add */
 	BATT_SET_PDO,/* sjc add */
 	BATT_SET_QC,/* sjc add */
@@ -377,7 +377,7 @@ enum usb_property_id {
 	USB_ADAP_TYPE,
 	USB_MOISTURE_DET_EN,
 	USB_MOISTURE_DET_STS,
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	USB_ADAP_SUBTYPE,
 	USB_VBUS_COLLAPSE_STATUS,
 	USB_VOOCPHY_STATUS,
@@ -418,13 +418,13 @@ enum usb_property_id {
 	USB_IN_STATUS,
 	USB_GET_BATT_CURR,
 	/*USB_ADSP_TRACK_DEBUG,*/
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 	USB_TEMP,
 	USB_REAL_TYPE,
 	USB_TYPEC_COMPLIANT,
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	USB_PPS_FORCE_SVOOC,
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 	USB_PROP_MAX,
 };
 
@@ -436,7 +436,7 @@ enum wireless_property_id {
 	WLS_CURR_MAX,
 	WLS_TYPE,
 	WLS_BOOST_EN,
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	WLS_INPUT_CURR_LIMIT = 8,
 	WLS_BOOST_VOLT = 10,
 	WLS_BOOST_AICL_ENABLE,
@@ -575,7 +575,7 @@ struct psy_state {
 	u32			opcode_set;
 };
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 struct oplus_custom_gpio_pinctrl {
 	int vchg_trig_gpio;
 	int otg_boost_en_gpio;
@@ -603,7 +603,7 @@ struct oplus_custom_gpio_pinctrl {
 
 #endif
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 struct oplus_chg_iio {
 	struct iio_channel	*usbtemp_v_chan;
 	struct iio_channel	*usbtemp_sup_v_chan;
@@ -616,7 +616,7 @@ struct oplus_chg_iio {
 
 struct battery_chg_dev {
 	struct device			*dev;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct oplus_chg_ic_dev		*buck_ic;
 	struct oplus_chg_ic_dev		*gauge_ic;
 	struct oplus_mms		*vooc_topic;
@@ -639,7 +639,7 @@ struct battery_chg_dev {
 	atomic_t			state;
 	struct work_struct		subsys_up_work;
 	struct work_struct		usb_type_work;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	int ccdetect_irq;
 	struct delayed_work	suspend_check_work;
 	struct delayed_work	adsp_voocphy_status_work;
@@ -674,7 +674,7 @@ struct battery_chg_dev {
 	struct delayed_work 	hvdcp_disable_work;
 	bool					voocphy_err_check;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	int vchg_trig_irq;
 	struct delayed_work vchg_trig_work;
 	struct delayed_work wait_wired_charge_on;
@@ -685,7 +685,7 @@ struct battery_chg_dev {
 	int batt_num;
 	bool	cid_status;
 	atomic_t suspended;
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 	int				fake_soc;
 	bool				block_tx;
 	bool				ship_mode_en;
@@ -697,10 +697,10 @@ struct battery_chg_dev {
 	u32				thermal_fcc_ua;
 	u32				restrict_fcc_ua;
 	bool				restrict_chg_en;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct oplus_custom_gpio_pinctrl oplus_custom_gpio;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct mutex    read_buffer_lock;
 	struct completion    oem_read_ack;
 	struct oem_read_buffer_resp_msg  read_buffer_dump;
@@ -743,7 +743,7 @@ struct qcom_pmic {
 	/* copy form msm8976_pmic end */
 };
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 int oplus_adsp_voocphy_get_fast_chg_type(void);
 int oplus_adsp_voocphy_enable(bool enable);
 int oplus_adsp_voocphy_reset_again(void);

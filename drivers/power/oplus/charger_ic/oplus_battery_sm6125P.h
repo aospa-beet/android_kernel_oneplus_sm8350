@@ -15,7 +15,7 @@
 #include <linux/extcon.h>
 #include <linux/usb/class-dual-role.h>
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #include "../../../../kernel/msm-4.14/drivers/power/supply/qcom/storm-watch.h"
 #endif
 
@@ -59,16 +59,16 @@ enum print_reason {
 #define PL_FCC_LOW_VOTER		"PL_FCC_LOW_VOTER"
 #define WBC_VOTER			"WBC_VOTER"
 #define HW_LIMIT_VOTER			"HW_LIMIT_VOTER"
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define CCDETECT_VOTER			"CCDETECT_VOTER"
 #define DIVIDER_SET_VOTER			"DIVIDER_SET_VOTER"
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define PD_DIS_VOTER			"PD_DIS_VOTER"
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC//Fanhong.Kong@ProDrv.CHG,add 2018/06/02 for SVOOC OTG
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC//Fanhong.Kong@ProDrv.CHG,add 2018/06/02 for SVOOC OTG
 #define SVOOC_OTG_VOTER		"SVOOC_OTG_VOTER"
-#endif/*OPLUS_FEATURE_CHG_BASIC*/
+#endif/*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 #define PL_SMB_EN_VOTER			"PL_SMB_EN_VOTER"
 #define FORCE_RECHARGE_VOTER		"FORCE_RECHARGE_VOTER"
 #define LPD_VOTER			"LPD_VOTER"
@@ -84,13 +84,13 @@ enum print_reason {
 #define THERMAL_THROTTLE_VOTER		"THERMAL_THROTTLE_VOTER"
 #define VOUT_VOTER			"VOUT_VOTER"
 #define DR_SWAP_VOTER			"DR_SWAP_VOTER"
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define DEFAULT_100MA_VOTER     "DEFAULT_100MA_VOTER"
 #endif
 #define USB_SUSPEND_VOTER		"USB_SUSPEND_VOTER"
 #define CHARGER_TYPE_VOTER		"CHARGER_TYPE_VOTER"
 #define HDC_IRQ_VOTER			"HDC_IRQ_VOTER"
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define THERMAL_USER_VOTER		"THERMAL_USER_VOTER"
 #endif
 
@@ -104,7 +104,7 @@ enum print_reason {
 #define ADC_CHG_ITERM_MASK		32767
 
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define USB_TEMP_HIGH	0x01//bit0
 #define USB_WATER_DETECT	0x02//bit1
 #define USB_RESERVE2	0x04//bit2
@@ -116,7 +116,7 @@ enum print_reason {
 #define SDP_100_MA			100000
 #define SDP_CURRENT_UA			500000
 #define CDP_CURRENT_UA			1500000
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define DCP_CURRENT_UA			1500000
 #else
 #define DCP_CURRENT_UA			2000000
@@ -377,7 +377,7 @@ struct smb_iio {
 	struct iio_channel	*connector_temp_chan;
 	struct iio_channel	*sbux_chan;
 	struct iio_channel	*vph_v_chan;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct iio_channel	*chgid_v_chan;
 	struct iio_channel	*usbtemp_v_chan;
 #endif
@@ -413,7 +413,7 @@ struct smb_charger {
 	struct power_supply		*dc_psy;
 	struct power_supply		*bms_psy;
 	struct power_supply		*usb_main_psy;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct power_supply		*ac_psy;
 #endif
 	struct power_supply		*usb_port_psy;
@@ -464,7 +464,7 @@ struct smb_charger {
 	struct delayed_work	pl_enable_work;
 	struct delayed_work	uusb_otg_work;
 	struct delayed_work	bb_removal_work;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
         struct delayed_work     chg_monitor_work;
 #endif
 	struct delayed_work	lpd_ra_open_work;
@@ -472,7 +472,7 @@ struct smb_charger {
 	struct delayed_work	thermal_regulation_work;
 	struct delayed_work	usbov_dbc_work;
 	struct delayed_work	role_reversal_check;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 struct delayed_work arb_monitor_work;
 #endif
 	struct alarm		lpd_recheck_timer;
@@ -484,7 +484,7 @@ struct delayed_work arb_monitor_work;
 	bool			sec_cp_present;
 	int			sec_chg_selected;
 	int			cp_reason;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct delayed_work typec_disable_cmd_work;
 #endif
 
@@ -573,7 +573,7 @@ struct delayed_work arb_monitor_work;
 	enum qc2_non_comp_voltage qc2_unsupported_voltage;
 	bool			dbc_usbov;
     bool			fake_usb_insertion;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	bool			fake_typec_insertion;
 #endif
 
@@ -599,13 +599,13 @@ struct delayed_work arb_monitor_work;
 
 	/* wireless */
 	int			wireless_vout;
-	#ifdef OPLUS_FEATURE_CHG_BASIC
+	#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	int			pre_current_ma;
 	bool		is_dpdm_on_usb;
 	struct delayed_work	divider_set_work;
 	struct work_struct	dpdm_set_work;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct work_struct	chargerid_switch_work;
 	struct mutex pinctrl_mutex;
 
@@ -618,7 +618,7 @@ struct delayed_work arb_monitor_work;
 	struct pinctrl_state	*usbtemp_gpio1_default;
 	struct delayed_work	ccdetect_work;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct pinctrl		*chg_2uart_pinctrl;
 	struct pinctrl_state	*chg_2uart_default;
 	struct pinctrl_state	*chg_2uart_sleep;
@@ -627,14 +627,14 @@ struct delayed_work arb_monitor_work;
 	struct pinctrl		*shipmode_id_pinctrl;
 	struct pinctrl_state	*shipmode_id_active;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct delayed_work     check_camera_and_hotspot_work;
 	bool 			ctrl_by_camera;
 	bool			ctrl_by_hotspot;
 #endif
 };
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 enum skip_reason {
 	REASON_OTG_ENABLED	= BIT(0),
 	REASON_FLASH_ENABLED	= BIT(1)
@@ -680,7 +680,7 @@ struct qcom_pmic {
 	struct smb5 *smb5_chip;
 	struct qpnp_vadc_chip	*pmi632_vadc_dev;
 	struct qpnp_vadc_chip	*pm8953_vadc_dev;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct iio_channel      *usb_temp_v_l_chan;
 	struct iio_channel      *usb_temp_v_r_chan;
 #endif
@@ -701,7 +701,7 @@ struct qcom_pmic {
 	bool			hc_mode_flag;
 	/* copy form msm8976_pmic end */
 };
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
 
 int smblib_read(struct smb_charger *chg, u16 addr, u8 *val);
@@ -717,7 +717,7 @@ int smblib_get_aicl_cont_threshold(struct smb_chg_param *param, u8 val_raw);
 int smblib_enable_charging(struct smb_charger *chg, bool enable);
 int smblib_set_charge_param(struct smb_charger *chg,
 			    struct smb_chg_param *param, int val_u);
-#ifdef OPLUS_FEATURE_CHG_BASIC  /*zhangkun add for qpnp-smb5.c oplus*/
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC  /*zhangkun add for qpnp-smb5.c oplus*/
 int smblib_set_opt_switcher_freq(struct smb_charger *chg, int fsw_khz);
 int smblib_set_charge_param(struct smb_charger *chg,
 			    struct smb_chg_param *param, int val_u);

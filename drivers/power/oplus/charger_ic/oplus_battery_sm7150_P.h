@@ -351,7 +351,7 @@ struct smb_iio {
 	struct iio_channel	*usb_temp_chan2;
 };
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 /* Yichun.Chen  PSW.BSP.CHG  adc channel | usb warn code */
 enum {
 	USB_TEMPERATURE1,	/* PM7150A ADC */
@@ -366,7 +366,7 @@ enum {
 #endif
 
 struct smb_charger {
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 /* Yichun.Chen  PSW.BSP.CHG  2019-04-08  for charge */
 	struct mutex		pinctrl_mutex;
 	struct power_supply	*ac_psy;

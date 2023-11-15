@@ -1,5 +1,5 @@
 /************************************************************************************
-** OPLUS_FEATURE_CHG_BASIC
+** CONFIG_OPLUS_FEATURE_CHG_BASIC
 ** Copyright (C), 2018-2019, OPLUS Mobile Comm Corp., Ltd
 **
 ** Description:
@@ -217,7 +217,7 @@ struct charger_custom_data {
 	int min_charger_voltage_1;
 	int min_charger_voltage_2;
 	int max_dmivr_charger_current;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	int step1_time;
 	int step1_current_ma;
 	int step2_time;
@@ -250,7 +250,7 @@ struct mtk_charger {
 	struct charger_device *chg1_dev;
 	struct notifier_block chg1_nb;
 	struct charger_device *chg2_dev;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct charger_device *dvchg1_dev;
 	struct notifier_block dvchg1_nb;
 	struct charger_data dvchg1_data;
@@ -274,7 +274,7 @@ struct mtk_charger {
 	struct adapter_device *pd_adapter;
 	struct notifier_block pd_nb;
 	struct mutex pd_lock;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct iio_channel      *charger_id_chan;
 	struct iio_channel      *usb_temp_v_l_chan;
 	struct iio_channel      *usb_temp_v_r_chan;
@@ -285,7 +285,7 @@ struct mtk_charger {
 	int step_chg_current;
 #endif
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	int ccdetect_gpio;
 	int ccdetect_irq;
 	struct pinctrl_state *ccdetect_active;
@@ -295,7 +295,7 @@ struct mtk_charger {
 #endif
 	int pd_type;
 	bool pd_reset;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct tcpc_device *tcpc;
 #endif
 
@@ -366,11 +366,11 @@ struct mtk_charger {
 	struct chg_alg_device *alg[MAX_ALG_NO];
 	struct notifier_block chg_alg_nb;
 	bool enable_hv_charging;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 		bool chargerid_disable;
 		bool chargerid_vol_disable;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct iio_channel *chg_temp_chan;
 	int chargeric_temp_volt;
 	int chargeric_temp;
@@ -413,7 +413,7 @@ typedef enum {
 	STEP_CHG_STATUS_INVALID
 } OPLUS_STEP_CHG_STATUS;
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 struct mtk_pmic {
 	struct mtk_charger* oplus_info;
 };
@@ -443,5 +443,5 @@ extern enum power_supply_type mt6360_get_hvdcp_type(void);
 void mt6360_enable_hvdcp_detect(void);
 void oplus_gauge_set_event(int event);
 int notify_adapter_event(struct notifier_block *notifier, unsigned long evt, void *unused);
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 #endif /* __OPLUS_BATTERY_MTK6885_H__ */

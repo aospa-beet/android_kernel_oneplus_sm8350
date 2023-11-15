@@ -55,16 +55,16 @@ enum print_reason {
 #define PL_FCC_LOW_VOTER		"PL_FCC_LOW_VOTER"
 #define WBC_VOTER			"WBC_VOTER"
 #define HW_LIMIT_VOTER			"HW_LIMIT_VOTER"
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define CCDETECT_VOTER			"CCDETECT_VOTER"
 #define DIVIDER_SET_VOTER			"DIVIDER_SET_VOTER"
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define PD_DIS_VOTER			"PD_DIS_VOTER"
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC//Fanhong.Kong@ProDrv.CHG,add 2018/06/02 for SVOOC OTG
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC//Fanhong.Kong@ProDrv.CHG,add 2018/06/02 for SVOOC OTG
 #define SVOOC_OTG_VOTER		"SVOOC_OTG_VOTER"
-#endif/*OPLUS_FEATURE_CHG_BASIC*/
+#endif/*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 #define PL_SMB_EN_VOTER			"PL_SMB_EN_VOTER"
 #define FORCE_RECHARGE_VOTER		"FORCE_RECHARGE_VOTER"
 #define LPD_VOTER			"LPD_VOTER"
@@ -89,7 +89,7 @@ enum print_reason {
 #define ICL_CHANGE_VOTER		"ICL_CHANGE_VOTER"
 
 #define BOOST_BACK_STORM_COUNT	3
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define WEAK_CHG_STORM_COUNT	3
 #else
 #define WEAK_CHG_STORM_COUNT	8
@@ -102,7 +102,7 @@ enum print_reason {
 #define ADC_CHG_ITERM_MASK		32767
 
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define USB_TEMP_HIGH	0x01//bit0
 #define USB_WATER_DETECT	0x02//bit1
 #define USB_RESERVE2	0x04//bit2
@@ -114,7 +114,7 @@ enum print_reason {
 #define SDP_100_MA			100000
 #define SDP_CURRENT_UA			500000
 #define CDP_CURRENT_UA			1500000
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define DCP_CURRENT_UA			1500000
 #else
 #define DCP_CURRENT_UA			2000000
@@ -390,7 +390,7 @@ struct smb_iio {
 	struct iio_channel	*connector_temp_chan;
 	struct iio_channel	*sbux_chan;
 	struct iio_channel	*vph_v_chan;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct iio_channel	*chgid_v_chan;
 	struct iio_channel	*usbtemp_v_chan_l;
 	struct iio_channel  *usbtemp_v_chan_r;
@@ -429,7 +429,7 @@ struct smb_charger {
 	struct power_supply		*dc_psy;
 	struct power_supply		*bms_psy;
 	struct power_supply		*usb_main_psy;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct power_supply		*ac_psy;
 #endif
 	struct power_supply		*usb_port_psy;
@@ -450,7 +450,7 @@ struct smb_charger {
 	struct smb_regulator	*vbus_vreg;
 	struct smb_regulator	*vconn_vreg;
 	struct regulator	*dpdm_reg;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct regulator	*pm7250b_bob_reg;
 #endif
 
@@ -505,10 +505,10 @@ struct smb_charger {
 	int			sec_chg_selected;
 	int			cp_reason;
 	int			cp_topo;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct delayed_work chg_monitor_work;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct delayed_work typec_disable_cmd_work;
 #endif
 
@@ -606,7 +606,7 @@ struct smb_charger {
 	int                     qc2_max_pulses;
 	enum qc2_non_comp_voltage qc2_unsupported_voltage;
 	bool			dbc_usbov;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
     bool			fake_usb_insertion;
 	bool			fake_typec_insertion;
 #endif
@@ -636,13 +636,13 @@ struct smb_charger {
 	int			dcin_uv_count;
 	ktime_t			dcin_uv_last_time;
 	int			last_wls_vout;
-	#ifdef OPLUS_FEATURE_CHG_BASIC
+	#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	int			pre_current_ma;
 	bool		is_dpdm_on_usb;
 	struct delayed_work	divider_set_work;
 	struct work_struct	dpdm_set_work;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct work_struct	chargerid_switch_work;
 	struct mutex pinctrl_mutex;
 
@@ -655,7 +655,7 @@ struct smb_charger {
 	struct pinctrl_state	*usbtemp_gpio1_default;
 	struct delayed_work	ccdetect_work;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct pinctrl		*chg_2uart_pinctrl;
 	struct pinctrl_state	*chg_2uart_default;
 	struct pinctrl_state	*chg_2uart_sleep;
@@ -665,7 +665,7 @@ struct smb_charger {
 	struct pinctrl_state	*shipmode_id_active;
 #endif
 };
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 enum skip_reason {
 	REASON_OTG_ENABLED	= BIT(0),
 	REASON_FLASH_ENABLED	= BIT(1)
@@ -734,7 +734,7 @@ int oplus_chg_get_charger_subtype(void);
 int oplus_chg_set_pd_config(void);
 bool oplus_sm7250_get_pd_type(void);
 
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
 int smblib_read(struct smb_charger *chg, u16 addr, u8 *val);
 int smblib_masked_write(struct smb_charger *chg, u16 addr, u8 mask, u8 val);

@@ -35,7 +35,7 @@
 #include <linux/reboot.h>
 #include <linux/alarmtimer.h>
 #include <mtk_musb.h>
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #ifndef CONFIG_TCPC_CLASS
 #include <linux/regmap.h>
 #include <linux/of_platform.h>
@@ -59,7 +59,7 @@
 #include "../../../misc/mediatek/extcon/extcon-mtk-usb.h"
 #endif
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #ifndef CONFIG_TCPC_CLASS
 #define MT6357_VS1_ANA_CON2 0x1736
 #define PMIC_RG_VS1_MODESET_MASK 0x1
@@ -147,18 +147,18 @@ void oplus_set_otg_switch_status(bool value);
 void oplus_wake_up_usbtemp_thread(void);
 extern void oplus_chg_turn_off_charging(struct oplus_chg_chip *chip);
 /* ==================================================================== */
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 bool oplus_ccdetect_check_is_gpio(struct oplus_chg_chip *chip);
 int oplus_ccdetect_gpio_init(struct oplus_chg_chip *chip);
 void oplus_ccdetect_irq_init(struct oplus_chg_chip *chip);
 bool oplus_ccdetect_support_check(void);
 int oplus_chg_ccdetect_parse_dt(struct oplus_chg_chip *chip);
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 void oplus_set_typec_cc_open(void);
 void oplus_usbtemp_recover_cc_open(void);
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 
 #define USB_TEMP_HIGH		0x01       /*bit0*/
 #define USB_WATER_DETECT	0x02       /*bit1*/
@@ -1433,7 +1433,7 @@ int mtk_charger_enable_charging(struct charger_consumer *consumer,
 	struct mtk_charger *info = consumer->cm;
 	int ret = 0;
 
-#if defined(OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
+#if defined(CONFIG_OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
 	return -EBUSY;
 #endif
 #ifdef CONFIG_OPLUS_CHARGER_MTK6765S
@@ -1451,7 +1451,7 @@ int mtk_charger_set_input_current_limit(struct charger_consumer *consumer,
 {
 	struct mtk_charger *info = consumer->cm;
 
-#if defined(OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
+#if defined(CONFIG_OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
 	return -EBUSY;
 #endif
 #ifdef CONFIG_OPLUS_CHARGER_MTK6765S
@@ -1494,7 +1494,7 @@ int mtk_charger_set_charging_current_limit(
 {
 	struct mtk_charger *info = consumer->cm;
 
-#if defined(OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
+#if defined(CONFIG_OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
 	return -EBUSY;
 #endif
 #ifdef CONFIG_OPLUS_CHARGER_MTK6765
@@ -1526,7 +1526,7 @@ int mtk_charger_get_charger_temperature(struct charger_consumer *consumer,
 {
 	struct mtk_charger *info = consumer->cm;
 
-#if defined(OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
+#if defined(CONFIG_OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
 	return -EBUSY;
 #endif
 #ifdef CONFIG_OPLUS_CHARGER_MTK6765S
@@ -1942,7 +1942,7 @@ static void mtk_charger_external_power_changed(struct power_supply *psy)
 	pr_notice("%s event, name:%s online:%d usb_type:%d type:%d vbus:%d\n", __func__,
 		psy->desc->name, prop.intval, prop2.intval, type_prop.intval,
 		get_vbus(info));
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	mtk_is_charger_on(info);
 #endif
 	_wake_up_charger(info);
@@ -1982,7 +1982,7 @@ static int notify_adapter_event(struct notifier_block *notifier,
 		chg_err("PD Notify fixe voltage ready\n");
 		pinfo->pd_type = MTK_PD_CONNECT_PE_READY_SNK;
 		mutex_unlock(&pinfo->pd_lock);
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 		pinfo->in_good_connect = true;
 		oplus_get_adapter_svid();
 		chg_err("MTK_PD_CONNECT_PE_READY_SNK_PD30 in_good_connect true\n");
@@ -1994,7 +1994,7 @@ static int notify_adapter_event(struct notifier_block *notifier,
 		chg_err("PD Notify PD30 ready\r\n");
 		pinfo->pd_type = MTK_PD_CONNECT_PE_READY_SNK_PD30;
 		mutex_unlock(&pinfo->pd_lock);
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 		pinfo->in_good_connect = true;
 		oplus_get_adapter_svid();
 		chr_err("MTK_PD_CONNECT_PE_READY_SNK_PD30 in_good_connect true\n");
@@ -2009,7 +2009,7 @@ static int notify_adapter_event(struct notifier_block *notifier,
 		mutex_unlock(&pinfo->pd_lock);
 		/* PE40 is ready */
 		_wake_up_charger(pinfo);
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 		pinfo->in_good_connect = true;
 		oplus_get_adapter_svid();
 		chg_err("MTK_PD_CONNECT_PE_READY_SNK_PD30 in_good_connect true\n");
@@ -4768,7 +4768,7 @@ void oplus_set_typec_sinkonly(void)
 }
 EXPORT_SYMBOL(oplus_set_typec_sinkonly);
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 void oplus_set_typec_cc_open(void)
 {
 	if (pinfo == NULL || pinfo->tcpc == NULL)
@@ -4789,7 +4789,7 @@ void oplus_usbtemp_recover_cc_open(void)
 #endif /* CONFIG_TCPC_CLASS */
 	chg_err(" !\n");
 }
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 
 bool oplus_usbtemp_condition(void)
 {
@@ -4854,7 +4854,7 @@ struct oplus_chg_operations  oplus_chg_default_ops = {
 	.set_typec_cc_open = oplus_set_typec_cc_open,
 };
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #ifndef CONFIG_TCPC_CLASS
 struct mt6397_chip *pmic_chip;
 
@@ -5108,7 +5108,7 @@ static int oplus_charger_probe(struct platform_device *pdev)
 		oplus_tbatt_power_off_task_init(oplus_chip);
 	}
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	oplus_chg_configfs_init(oplus_chip);
 #endif
 
@@ -5186,7 +5186,7 @@ static int oplus_charger_probe(struct platform_device *pdev)
 		ret = device_create_file(&oplus_chip->batt_psy->dev, &dev_attr_StartCharging_Test);
 	}
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #ifndef CONFIG_TCPC_CLASS
 	oplus_pmic_chip_init();
 #endif
@@ -5197,7 +5197,7 @@ static int oplus_charger_probe(struct platform_device *pdev)
 
 static int oplus_charger_remove(struct platform_device *dev)
 {
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	oplus_chg_configfs_exit();
 #endif
 	return 0;

@@ -57,7 +57,7 @@ typedef enum {
 	STEP_CHG_STATUS_INVALID
 } OPLUS_STEP_CHG_STATUS;
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 
 struct mtk_pmic {
 	struct charger_manager* oplus_info;
@@ -95,5 +95,5 @@ int oplus_get_typec_cc_orientation(void);
 int oplus_get_otg_online_status(void);
 bool oplus_get_otg_online_status_default(void);
 void oplus_set_otg_switch_status(bool value);
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 #endif /* __OPLUS_BATTERY_MTK6885_H__ */

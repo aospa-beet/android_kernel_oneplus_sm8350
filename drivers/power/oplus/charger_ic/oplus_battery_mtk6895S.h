@@ -74,7 +74,7 @@ struct charger_data;
 #define MAX_DMIVR_CHARGER_CURRENT 1800000 /* 1.8 A */
 
 /* battery warning */
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define BATTERY_NOTIFY_CASE_0001_VCHARGER
 #define BATTERY_NOTIFY_CASE_0002_VBATTEMP
 #endif
@@ -245,7 +245,7 @@ enum chg_data_idx_enum {
 	CHGS_SETTING_MAX,
 };
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 typedef enum {
 	NTC_BATTERY,
 	NTC_CHARGER_IC,
@@ -297,7 +297,7 @@ struct oplus_custom_gpio_pinctrl {
 #endif
 
 struct mtk_charger {
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 /*BSP.CHG.Basic, 2021/06/06, add for charge*/
 	struct oplus_chg_ic_dev *ic_dev;
 	struct oplus_chg_mod *usb_ocm;
@@ -440,7 +440,7 @@ struct mtk_charger {
 	/*charger IC charging status*/
 	bool is_charging;
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct iio_channel      *subboard_temp_chan;
 	struct iio_channel      *chargeric_temp_chan;
 	struct iio_channel      *charger_id_chan;
@@ -474,7 +474,7 @@ struct mtk_charger {
 #endif
 };
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 struct mtk_pmic {
         struct mtk_charger* oplus_info;
 };
@@ -525,7 +525,7 @@ extern void _wake_up_charger(struct mtk_charger *info);
 extern int mtk_chg_enable_vbus_ovp(bool enable);
 
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 extern int battery_meter_get_charger_voltage(void);
 extern void mt_usb_connect(void);
 extern void mt_usb_disconnect(void);

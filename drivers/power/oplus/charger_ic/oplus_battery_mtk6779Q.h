@@ -51,7 +51,7 @@ struct pe40_power_cap {
 	int minwatt[PDO_MAX_NR];
 };
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 
 struct mtk_pmic {
 	struct charger_manager* oplus_info;
@@ -107,6 +107,6 @@ bool oplus_pmic_check_chip_is_null(void);
 extern int oplus_get_typec_sbu_voltage(void);
 extern void oplus_set_water_detect(bool enable);
 extern int oplus_get_water_detect(void);
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 
 #endif /* __OPLUS_BATTERY_MTK6779_H__ */

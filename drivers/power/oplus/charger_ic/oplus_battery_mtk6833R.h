@@ -58,7 +58,7 @@ typedef enum {
 	STEP_CHG_STATUS_STEP4,
 	STEP_CHG_STATUS_INVALID
 } OPLUS_STEP_CHG_STATUS;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 
 enum {
 	CHARGER_NORMAL_CHG_CURVE,
@@ -103,5 +103,5 @@ int oplus_get_otg_online_status(void);
 bool oplus_get_otg_online_status_default(void);
 void oplus_set_otg_switch_status(bool value);
 #define BQ2591X 3
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 #endif /* __OPLUS_BATTERY_MTK6833_H__ */

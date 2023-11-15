@@ -696,7 +696,7 @@ int charger_manager_enable_charging(struct charger_consumer *consumer,
 	struct charger_manager *info = consumer->cm;
 	int ret = 0;
 
-#if defined(OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
+#if defined(CONFIG_OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
 	return -EBUSY;
 #endif
 #ifdef CONFIG_OPLUS_CHARGER_MTK6769
@@ -714,7 +714,7 @@ int charger_manager_set_input_current_limit(struct charger_consumer *consumer,
 {
 	struct charger_manager *info = consumer->cm;
 
-#if defined(OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
+#if defined(CONFIG_OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
 	return -EBUSY;
 #endif
 #ifdef CONFIG_OPLUS_CHARGER_MTK6769
@@ -755,7 +755,7 @@ int charger_manager_set_charging_current_limit(
 {
 	struct charger_manager *info = consumer->cm;
 
-#if defined(OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
+#if defined(CONFIG_OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
 	return -EBUSY;
 #endif
 #ifdef CONFIG_OPLUS_CHARGER_MTK6769
@@ -787,7 +787,7 @@ int charger_manager_get_charger_temperature(struct charger_consumer *consumer,
 {
 	struct charger_manager *info = consumer->cm;
 
-#if defined(OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
+#if defined(CONFIG_OPLUS_FEATURE_CHG_BASIC) && defined(CONFIG_OPLUS_CHARGER_MT6370_TYPEC)
 	return -EBUSY;
 #endif
 #ifdef CONFIG_OPLUS_CHARGER_MTK6769

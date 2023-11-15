@@ -24,9 +24,9 @@ enum print_reason {
 	PR_OTG		= BIT(4),
 };
 
-#ifdef OPLUS_FEATURE_CHG_BASIC//Fanhong.Kong@ProDrv.CHG,add 2018/06/02 for SVOOC OTG
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC//Fanhong.Kong@ProDrv.CHG,add 2018/06/02 for SVOOC OTG
 #define SVOOC_OTG_VOTER		"SVOOC_OTG_VOTER"
-#endif/*OPLUS_FEATURE_CHG_BASIC*/
+#endif/*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
 #define DEFAULT_VOTER			"DEFAULT_VOTER"
 #define USER_VOTER			"USER_VOTER"
@@ -71,7 +71,7 @@ enum print_reason {
 #define MOISTURE_VOTER			"MOISTURE_VOTER"
 #define HVDCP2_ICL_VOTER		"HVDCP2_ICL_VOTER"
 #define OV_VOTER			"OV_VOTER"
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define CCDETECT_VOTER			"CCDETECT_VOTER"
 #endif
 #define FG_ESR_VOTER			"FG_ESR_VOTER"
@@ -270,7 +270,7 @@ struct smb_charger {
 	struct power_supply		*bms_psy;
 	struct power_supply_desc	usb_psy_desc;
 	struct power_supply		*usb_main_psy;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct power_supply		*ac_psy;
 #endif
 	struct power_supply		*usb_port_psy;
@@ -322,10 +322,10 @@ struct smb_charger {
 	struct work_struct	legacy_detection_work;
 	struct delayed_work	uusb_otg_work;
 	struct delayed_work	bb_removal_work;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct delayed_work chg_monitor_work;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct delayed_work typec_disable_cmd_work;
 #endif
 
@@ -381,7 +381,7 @@ struct smb_charger {
 	int			qc2_max_pulses;
 	bool			non_compliant_chg_detected;
 	bool			fake_usb_insertion;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	bool			fake_typec_insertion;
 #endif
 	bool			reddragon_ipc_wa;
@@ -398,12 +398,12 @@ struct smb_charger {
 	int			pulse_cnt;
 
 	int			die_health;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	int			pre_current_ma;
     bool		is_dpdm_on_usb;
 	struct work_struct	dpdm_set_work;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	int			ccdetect_gpio;
 	int			ccdetect_irq;
 	struct pinctrl		*ccdetect_pinctrl;
@@ -412,10 +412,10 @@ struct smb_charger {
 	struct delayed_work	ccdetect_work;
     struct delayed_work	divider_set_work;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
     int        charger_id_num;
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct pinctrl		*chg_2uart_pinctrl;
 	struct pinctrl_state	*chg_2uart_default;
 	struct pinctrl_state	*chg_2uart_sleep;
@@ -637,7 +637,7 @@ int smblib_set_prop_pr_swap_in_progress(struct smb_charger *chg,
 int smblib_stat_sw_override_cfg(struct smb_charger *chg, bool override);
 void smblib_usb_typec_change(struct smb_charger *chg);
 int smblib_toggle_stat(struct smb_charger *chg, int reset);
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 const struct apsd_result *smblib_update_usb_type(struct smb_charger *chg);
 irqreturn_t oplus_ccdetect_change_handler(int irq, void *data);
 #endif

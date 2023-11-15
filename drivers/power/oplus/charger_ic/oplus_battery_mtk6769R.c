@@ -573,7 +573,7 @@ void charger_log_flash(const char *fmt, ...)
 
 void _wake_up_charger(struct charger_manager *info)
 {
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	return;
 #else
 	unsigned long flags;
@@ -592,7 +592,7 @@ void _wake_up_charger(struct charger_manager *info)
 	spin_unlock_irqrestore(&info->slock, flags);
 	info->charger_thread_timeout = true;
 	wake_up(&info->wait_que);
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0))
@@ -771,7 +771,7 @@ int charger_manager_enable_charging(struct charger_consumer *consumer,
 {
 	struct charger_manager *info = consumer->cm;
 	int ret = 0;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	return -EBUSY;
 #endif
 
@@ -786,7 +786,7 @@ int charger_manager_set_input_current_limit(struct charger_consumer *consumer,
 {
 	struct charger_manager *info = consumer->cm;
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	return -EBUSY;
 #endif
 	if (info != NULL) {
@@ -824,7 +824,7 @@ int charger_manager_set_charging_current_limit(
 {
 	struct charger_manager *info = consumer->cm;
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	return -EBUSY;
 #endif
 
@@ -853,7 +853,7 @@ int charger_manager_get_charger_temperature(struct charger_consumer *consumer,
 {
 	struct charger_manager *info = consumer->cm;
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	return -EBUSY;
 #endif
 
@@ -1683,7 +1683,7 @@ check_again:
 	return 0;
 }
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 
 #define TEMP_25C 25
 #define OPLUS_TCHG_01C_PRECISION	10
@@ -2538,9 +2538,9 @@ void mtk_charger_int_handler(void)
 		mutex_unlock(&pinfo->cable_out_lock);
 		charger_manager_notifier(pinfo, CHARGER_NOTIFY_STOP_CHARGING);
 	} else{
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 		oplus_wake_up_usbtemp_thread();
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 		charger_manager_notifier(pinfo, CHARGER_NOTIFY_START_CHARGING);
 	}
 	chr_err("wake_up_charger\n");
@@ -3817,7 +3817,7 @@ void notify_adapter_event(enum adapter_type type, enum adapter_event evt,
 			chr_err("PD Notify fixe voltage ready\n");
 			pinfo->pd_type = MTK_PD_CONNECT_PE_READY_SNK;
 			mutex_unlock(&pinfo->charger_pd_lock);
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 			oplus_chg_track_record_chg_type_info();
 #endif
 			/* PD is ready */
@@ -3828,7 +3828,7 @@ void notify_adapter_event(enum adapter_type type, enum adapter_event evt,
 			chr_err("PD Notify PD30 ready\r\n");
 			pinfo->pd_type = MTK_PD_CONNECT_PE_READY_SNK_PD30;
 			mutex_unlock(&pinfo->charger_pd_lock);
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 			oplus_chg_track_record_chg_type_info();
 #endif
 			/* PD30 is ready */
@@ -3839,7 +3839,7 @@ void notify_adapter_event(enum adapter_type type, enum adapter_event evt,
 			chr_err("PD Notify APDO Ready\n");
 			pinfo->pd_type = MTK_PD_CONNECT_PE_READY_SNK_APDO;
 			mutex_unlock(&pinfo->charger_pd_lock);
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 			oplus_chg_track_record_chg_type_info();
 #endif
 			/* PE40 is ready */
@@ -4313,7 +4313,7 @@ static int battery_get_property(struct power_supply *psy,
 	return 0;
 }
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 static int mt_mastercharger_prop_is_writeable(struct power_supply *psy,
 		enum power_supply_property psp)
 {
@@ -4697,7 +4697,7 @@ static int oplus_charger_probe(struct platform_device *pdev)
 	struct oplus_chg_chip *oplus_chip = NULL;
 	struct master_chg_psy *masterchg_psy = NULL;
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 /* add for charger_wakelock */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0))
 	char *name = NULL;
@@ -4860,7 +4860,7 @@ static int oplus_charger_probe(struct platform_device *pdev)
 	if (mtk_pe40_init(info) == false)
 		info->enable_pe_4 = false;
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 19, 0))
 	mtk_hvdcp_v20_init(info);
 #endif

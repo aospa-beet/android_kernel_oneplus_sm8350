@@ -38,7 +38,7 @@ typedef enum {
 	STEP_CHG_STATUS_INVALID
 } OPLUS_STEP_CHG_STATUS;
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 
 struct mtk_pmic {
 	struct charger_manager* oplus_info;
@@ -70,5 +70,5 @@ void mt6360_enable_hvdcp_detect(void);
 extern void oplus_notify_hvdcp_detect_stat(void);
 void oplus_gauge_set_event(int event);
 extern bool is_mtksvooc_project;
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 #endif /* __OPLUS_BATTERY_MTK6885_H__ */

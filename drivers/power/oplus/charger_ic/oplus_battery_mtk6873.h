@@ -472,7 +472,7 @@ struct charger_manager {
 
 	struct adapter_device *pd_adapter;
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct iio_channel	*charger_id_chan;
 	struct iio_channel      *usb_temp_v_l_chan;
 	struct iio_channel      *usb_temp_v_r_chan;
@@ -577,7 +577,7 @@ struct charger_manager {
 	bool enable_dynamic_mivr;
 };
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 
 struct mtk_pmic {
 	struct charger_manager* oplus_info;
@@ -635,7 +635,7 @@ extern void oplus_set_water_detect(bool enable);
 extern int oplus_get_water_detect(void);
 //extern enum power_supply_type mt6360_get_hvdcp_type(void);
 //void mt6360_enable_hvdcp_detect(void);
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 
 /* charger related module interface */
 extern int charger_manager_notifier(struct charger_manager *info, int event);

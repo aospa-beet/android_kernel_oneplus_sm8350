@@ -43,7 +43,7 @@
 
 #include "oplus_hal_mtk6895S.h"
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #include <linux/gpio.h>
 #include <linux/of_gpio.h>
 #include <linux/iio/consumer.h>
@@ -839,7 +839,7 @@ static void mtk_charger_parse_dt(struct mtk_charger *info,
 		info->algorithm_name = "Basic";
 	}
 
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	if (strcmp(info->algorithm_name, "Basic") == 0) {
 		chr_err("found Basic\n");
 		mtk_basic_charger_init(info);
@@ -3104,7 +3104,7 @@ static bool mtk_is_charger_on(struct mtk_charger *info)
 	return true;
 }
 
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 static void charger_send_kpoc_uevent(struct mtk_charger *info)
 {
 	static bool first_time = true;
@@ -3278,7 +3278,7 @@ static int charger_routine_thread(void *arg)
 		check_battery_exist(info);
 		check_dynamic_mivr(info);
 		charger_check_status(info);
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 		kpoc_power_off_check(info);
 #endif
 
@@ -3561,7 +3561,7 @@ static int psy_charger_get_property(struct power_supply *psy,
 {
 	struct mtk_charger *info;
 	struct charger_device *chg;
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct charger_data *pdata;
 #endif
 	int ret = 0;
@@ -3618,7 +3618,7 @@ static int psy_charger_get_property(struct power_supply *psy,
 		val->intval = get_vbus(info);
 		break;
 	case POWER_SUPPLY_PROP_TEMP:
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 		if (chg == info->chg1_dev)
 			val->intval =
 				info->chg_data[CHG1_SETTING].junction_temp_max * 10;
@@ -3731,7 +3731,7 @@ static void mtk_charger_external_power_changed(struct power_supply *psy)
 		psy->desc->name, prop.intval, prop2.intval,
 		get_vbus(info));
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	pinfo = info;
 	oplus_chg_ic_virq_trigger(pinfo->ic_dev, OPLUS_IC_VIRQ_CHG_TYPE_CHANGE);
 #endif
@@ -4100,7 +4100,7 @@ bool is_meta_mode(void)
 }
 EXPORT_SYMBOL(is_meta_mode);
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 
 static int oplus_suspend_charger(bool suspend)
 {
@@ -5530,9 +5530,9 @@ struct oplus_chg_ic_virq mtk_chg_virq_table[] = {
 	{ .virq_id = OPLUS_IC_VIRQ_SVID },
 	{ .virq_id = OPLUS_IC_VIRQ_TYPEC_STATE },
 };
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #define CHARGER_25C_VOLT	900
 #define TEMP_25C		250
 struct chtemperature {
@@ -5952,7 +5952,7 @@ static int mtk_charger_probe(struct platform_device *pdev)
 	struct netlink_kernel_cfg cfg = {
 		.input = chg_nl_data_handler,
 	};
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	struct device_node *node = pdev->dev.of_node;
 	struct oplus_chg_ic_cfg ic_cfg = { 0 };
 	enum oplus_chg_ic_type ic_type;
@@ -5962,13 +5962,13 @@ static int mtk_charger_probe(struct platform_device *pdev)
 
 	chr_err("%s: 111 starts\n", __func__);
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	if (!tcpc_dev_get_by_name("type_c_port0")) {
 		chr_err("%s get tcpc device type_c_port0 fail\n", __func__);
 		return -EPROBE_DEFER;
 	}
 
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 
 	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
 	if (!info)
@@ -5978,7 +5978,7 @@ static int mtk_charger_probe(struct platform_device *pdev)
 
 	mtk_charger_parse_dt(info, &pdev->dev);
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	pinfo = info;
 
 	info->chg1_dev = get_charger_by_name("primary_chg");
@@ -6122,7 +6122,7 @@ static int mtk_charger_probe(struct platform_device *pdev)
 
 	kthread_run(charger_routine_thread, info, "charger_thread");
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	pinfo->tcpc = tcpc_dev_get_by_name("type_c_port0");
 	if (!pinfo->tcpc) {
 		chr_err("%s get tcpc device type_c_port0 fail\n", __func__);
@@ -6243,7 +6243,7 @@ static int __init mtk_charger_init(void)
 {
 	return platform_driver_register(&mtk_charger_driver);
 }
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 module_init(mtk_charger_init);
 #endif
 
@@ -6251,11 +6251,11 @@ static void __exit mtk_charger_exit(void)
 {
 	platform_driver_unregister(&mtk_charger_driver);
 }
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 module_exit(mtk_charger_exit);
 #endif
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 oplus_chg_module_register(mtk_charger);
 #endif
 

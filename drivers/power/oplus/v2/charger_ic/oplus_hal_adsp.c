@@ -5,7 +5,7 @@
 
 #define pr_fmt(fmt) "[ADSP]([%s][%d]): " fmt, __func__, __LINE__
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #include <linux/proc_fs.h>
 #include <linux/version.h>
 #include <linux/time.h>
@@ -52,9 +52,9 @@ extern void oplus_usb_set_none_role(void);
 static int oplus_get_voocphy_enable(struct battery_chg_dev *bcdev);
 static int oplus_voocphy_enable(struct battery_chg_dev *bcdev, bool enable);
 static int fg_sm8350_get_battery_soc(void);
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 /*for p922x compile*/
 void __attribute__((weak)) oplus_set_wrx_otg_value(void)
 {
@@ -80,7 +80,7 @@ void __attribute__((weak)) oplus_dcin_irq_enable(void)
 {
 	return;
 }
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
 static int oplus_chg_disable_charger(bool disable, const char *client_str)
 {
@@ -206,7 +206,7 @@ static const char * const qc_power_supply_usb_type_text[] = {
 	"HVDCP", "HVDCP_3", "HVDCP_3P5"
 };
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 static int oem_battery_chg_write(struct battery_chg_dev *bcdev, void *data,
 	int len)
 {
@@ -431,7 +431,7 @@ static void battery_chg_subsys_up_work(struct work_struct *work)
 	battery_chg_notify_enable(bcdev);
 }
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 void oplus_typec_disable(void)
 {
 	int rc = 0;
@@ -1270,9 +1270,9 @@ static void oplus_vbus_enable_adc_work(struct work_struct *work)
 	oplus_chg_disable_charger(true, FASTCHG_VOTER);
 	oplus_chg_suspend_charger(true, FASTCHG_VOTER);
 }
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #ifdef OPLUS_CHG_UNDEF
 static void oplus_wait_wired_charge_on_work(struct work_struct *work)
 {
@@ -1354,7 +1354,7 @@ bool oplus_get_wired_chg_present(void)
 		return true;
 	return false;
 }
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
 static void battery_chg_state_cb(void *priv, enum pmic_glink_state state)
 {
@@ -1395,7 +1395,7 @@ int qti_battery_charger_get_prop(const char *name,
 	if (!psy)
 		return -ENODEV;
 
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	bcdev = power_supply_get_drvdata(psy);
 #else
 	bcdev = g_bcdev;
@@ -1560,7 +1560,7 @@ static void battery_chg_update_usb_type_work(struct work_struct *work)
 	struct battery_chg_dev *bcdev = container_of(work,
 					struct battery_chg_dev, usb_type_work);
 	struct psy_state *pst = &bcdev->psy_list[PSY_TYPE_USB];
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	static int last_usb_adap_type = POWER_SUPPLY_USB_TYPE_UNKNOWN;
 #endif
 	int rc;
@@ -1599,7 +1599,7 @@ static void battery_chg_update_usb_type_work(struct work_struct *work)
 		usb_psy_desc.type = POWER_SUPPLY_TYPE_USB_PD;
 		break;
 	default:
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 		rc = read_property_id(bcdev, pst, USB_ONLINE);
 		if (rc < 0) {
 			chg_err("Failed to read USB_ONLINE rc=%d\n", rc);
@@ -1613,7 +1613,7 @@ static void battery_chg_update_usb_type_work(struct work_struct *work)
 		break;
 	}
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	if (!((last_usb_adap_type == POWER_SUPPLY_USB_TYPE_PD_PPS ||
 	    last_usb_adap_type == POWER_SUPPLY_USB_TYPE_PD ||
 	    last_usb_adap_type == POWER_SUPPLY_USB_TYPE_PD_DRP) &&
@@ -1660,7 +1660,7 @@ static void handle_notification(struct battery_chg_dev *bcdev, void *data,
 		if (pst && is_wls_psy_available(bcdev))
 			power_supply_changed(pst->psy);
 		break;
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	case BC_PD_SVOOC:
 #ifdef OPLUS_CHG_UNDEF /* TODO */
 		if ((get_oplus_chg_chip() && get_oplus_chg_chip()->wireless_support == false)
@@ -1758,7 +1758,7 @@ static int battery_chg_callback(void *priv, void *data, size_t len)
 
 	if (hdr->opcode == BC_NOTIFY_IND)
 		handle_notification(bcdev, data, len);
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	else if (hdr->opcode == OEM_OPCODE_READ_BUFFER)
 		handle_oem_read_buffer(bcdev, data, len);
 #endif
@@ -1812,7 +1812,7 @@ static enum power_supply_property wls_props[] = {
 	POWER_SUPPLY_PROP_CURRENT_MAX,
 	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
 	POWER_SUPPLY_PROP_TEMP,
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	POWER_SUPPLY_PROP_PRESENT,
 #endif
 };
@@ -1849,7 +1849,7 @@ static const char *get_usb_type_name(u32 usb_type)
 	return "Unknown";
 }
 
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 static int usb_psy_set_icl(struct battery_chg_dev *bcdev, u32 prop_id, int val)
 {
 	struct psy_state *pst = &bcdev->psy_list[PSY_TYPE_USB];
@@ -1882,9 +1882,9 @@ static int usb_psy_set_icl(struct battery_chg_dev *bcdev, u32 prop_id, int val)
 
 	return rc;
 }
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 static void oplus_chg_set_match_temp_to_voocphy(void)
 {
 	int rc = 0;
@@ -1907,9 +1907,9 @@ static void oplus_chg_set_match_temp_to_voocphy(void)
 
 	chg_debug("ap set match temp[%d] to voocphy\n", match_temp);
 }
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 
 #ifdef OPLUS_CHG_UNDEF
 static unsigned int get_chg_ctl_param_info(struct battery_chg_dev *bcdev)
@@ -1931,7 +1931,7 @@ static unsigned int get_chg_ctl_param_info(struct battery_chg_dev *bcdev)
 	return (project * 100 + index);
 }
 #endif
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
 static int usb_psy_get_prop(struct power_supply *psy,
 		enum power_supply_property prop,
@@ -1958,7 +1958,7 @@ static int usb_psy_get_prop(struct power_supply *psy,
 	return 0;
 }
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 #ifdef OPLUS_CHG_UNDEF /* TODO */
 int oplus_get_fast_chg_type(void)
 {
@@ -1993,7 +1993,7 @@ static int usb_psy_set_prop(struct power_supply *psy,
 
 	switch (prop) {
 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 		rc = usb_psy_set_icl(bcdev, prop_id, pval->intval);
 #endif
 		break;
@@ -2200,7 +2200,7 @@ static enum power_supply_property battery_props[] = {
 	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
 	POWER_SUPPLY_PROP_POWER_NOW,
 	POWER_SUPPLY_PROP_POWER_AVG,
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	POWER_SUPPLY_PROP_CHARGE_NOW,
 	POWER_SUPPLY_PROP_VOLTAGE_MIN,
 	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
@@ -2793,7 +2793,7 @@ static void battery_chg_add_debugfs(struct battery_chg_dev *bcdev)
 static void battery_chg_add_debugfs(struct battery_chg_dev *bcdev) { }
 #endif
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 static bool oplus_vchg_trig_is_support(void)
 {
 	struct battery_chg_dev *bcdev = g_bcdev;
@@ -2957,9 +2957,9 @@ static void oplus_vchg_trig_irq_register(struct battery_chg_dev *bcdev)
 	if (ret != 0)
 		chg_err("enable_irq_wake: vchg_trig_irq failed %d\n", ret);
 }
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 static void smbchg_enter_shipmode_pmic(struct battery_chg_dev *bcdev)
 {
 	int rc = 0;
@@ -3151,7 +3151,7 @@ static int oplus_chg_parse_custom_dt(struct battery_chg_dev *bcdev)
 
 	return 0;
 }
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
 static int battery_chg_parse_dt(struct battery_chg_dev *bcdev)
 {
@@ -3160,12 +3160,12 @@ static int battery_chg_parse_dt(struct battery_chg_dev *bcdev)
 	int i, rc, len;
 	u32 prev, val;
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	bcdev->otg_online = false;
 	bcdev->pd_svooc = false;
 #endif
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	oplus_subboard_temp_gpio_init(bcdev);
 #endif
 	of_property_read_string(node, "qcom,wireless-fw-name",
@@ -3253,7 +3253,7 @@ static int battery_chg_ship_mode(struct notifier_block *nb, unsigned long code,
 /**********************************************************************
  * battery charge ops *
  **********************************************************************/
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 static int oplus_get_voocphy_enable(struct battery_chg_dev *bcdev)
 {
 	int rc = 0;
@@ -3490,12 +3490,12 @@ static void oplus_plugin_irq_work(struct work_struct *work)
 	chg_info("!!!pd_svooc[%d]\n", bcdev->pd_svooc);
 }
 
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 
 /**********************************************************************
  * battery gauge ops *
  **********************************************************************/
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 __maybe_unused static int fg_sm8350_get_battery_mvolts(void)
 {
 	int rc = 0;
@@ -3851,9 +3851,9 @@ static int fg_bq28z610_get_battery_balancing_status(void)
 {
 	return 0;
 }
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 static ssize_t proc_debug_reg_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 {
 	uint8_t ret = 0;
@@ -3982,7 +3982,7 @@ static const struct dev_pm_ops battery_chg_pm_ops = {
 };
 #endif
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 static int oplus_chg_ssr_notifier_cb(struct notifier_block *nb,
 				     unsigned long code, void *data)
 {
@@ -5322,7 +5322,7 @@ static int oplus_chg_8350_hardware_init(struct oplus_chg_ic_dev *ic_dev)
 	return 0;
 }
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 static void *oplus_chg_8350_buck_get_func(struct oplus_chg_ic_dev *ic_dev, enum oplus_chg_ic_func func_id)
 {
 	void *func = NULL;
@@ -6010,7 +6010,7 @@ static int oplus_sm8350_ic_register(struct battery_chg_dev *bcdev)
 
 	return 0;
 }
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 
 static int battery_chg_probe(struct platform_device *pdev)
 {
@@ -6020,15 +6020,15 @@ static int battery_chg_probe(struct platform_device *pdev)
 	const char *chg_name;
 	int rc, i;
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	chg_info("battery_chg_probe start...\n");
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
 	bcdev = devm_kzalloc(&pdev->dev, sizeof(*bcdev), GFP_KERNEL);
 	if (!bcdev)
 		return -ENOMEM;
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	g_bcdev = bcdev;
 	bcdev->hvdcp_detect_time = 0;
 	bcdev->hvdcp_detach_time = 0;
@@ -6065,7 +6065,7 @@ static int battery_chg_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	mutex_init(&bcdev->rw_lock);
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	mutex_init(&bcdev->oplus_custom_gpio.pinctrl_mutex);
 	mutex_init(&bcdev->read_buffer_lock);
 	init_completion(&bcdev->oem_read_ack);
@@ -6075,7 +6075,7 @@ static int battery_chg_probe(struct platform_device *pdev)
 	init_completion(&bcdev->fw_update_ack);
 	INIT_WORK(&bcdev->subsys_up_work, battery_chg_subsys_up_work);
 	INIT_WORK(&bcdev->usb_type_work, battery_chg_update_usb_type_work);
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	INIT_DELAYED_WORK(&bcdev->adsp_voocphy_status_work, oplus_adsp_voocphy_status_func);
 	INIT_DELAYED_WORK(&bcdev->unsuspend_usb_work, oplus_unsuspend_usb_work);
 	INIT_DELAYED_WORK(&bcdev->otg_init_work, oplus_otg_init_status_func);
@@ -6092,7 +6092,7 @@ static int battery_chg_probe(struct platform_device *pdev)
 	INIT_DELAYED_WORK(&bcdev->plugin_irq_work, oplus_plugin_irq_work);
 	INIT_DELAYED_WORK(&bcdev->recheck_input_current_work, oplus_recheck_input_current_work);
 #endif
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	INIT_DELAYED_WORK(&bcdev->vchg_trig_work, oplus_vchg_trig_work);
 	/* INIT_DELAYED_WORK(&bcdev->wait_wired_charge_on, oplus_wait_wired_charge_on_work); */
 	/* INIT_DELAYED_WORK(&bcdev->wait_wired_charge_off, oplus_wait_wired_charge_off_work); */
@@ -6118,7 +6118,7 @@ static int battery_chg_probe(struct platform_device *pdev)
 	bcdev->reboot_notifier.notifier_call = battery_chg_ship_mode;
 	bcdev->reboot_notifier.priority = 255;
 	register_reboot_notifier(&bcdev->reboot_notifier);
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	oplus_ap_init_adsp_gague(bcdev);
 #endif
 
@@ -6129,7 +6129,7 @@ static int battery_chg_probe(struct platform_device *pdev)
 	bcdev->restrict_fcc_ua = DEFAULT_RESTRICT_FCC_UA;
 	platform_set_drvdata(pdev, bcdev);
 	bcdev->fake_soc = -EINVAL;
-#ifndef OPLUS_FEATURE_CHG_BASIC
+#ifndef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	rc = battery_chg_init_psy(bcdev);
 	if (rc < 0)
 		goto error;
@@ -6143,7 +6143,7 @@ static int battery_chg_probe(struct platform_device *pdev)
 		goto error;
 	}
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	bcdev->ssr_nb.notifier_call = oplus_chg_ssr_notifier_cb;
 	bcdev->subsys_handle = qcom_register_ssr_notifier("lpass",
 							  &bcdev->ssr_nb);
@@ -6173,12 +6173,12 @@ static int battery_chg_probe(struct platform_device *pdev)
 		schedule_delayed_work(&bcdev->vchg_trig_work, msecs_to_jiffies(3000));
 		oplus_vchg_trig_irq_register(bcdev);
 	}
-#endif /*OPLUS_FEATURE_CHG_BASIC*/
+#endif /*CONFIG_OPLUS_FEATURE_CHG_BASIC*/
 
 	battery_chg_add_debugfs(bcdev);
 	battery_chg_notify_enable(bcdev);
 	device_init_wakeup(bcdev->dev, true);
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	oplus_chg_set_match_temp_to_voocphy();
 	oplus_voocphy_enable(bcdev, true);
 	schedule_delayed_work(&bcdev->otg_init_work, 0);
@@ -6233,7 +6233,7 @@ static int battery_chg_remove(struct platform_device *pdev)
 	return 0;
 }
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 
 static void battery_chg_shutdown(struct platform_device *pdev)
 {
@@ -6266,7 +6266,7 @@ static void battery_chg_shutdown(struct platform_device *pdev)
 	}
 #endif
 }
-#endif /* OPLUS_FEATURE_CHG_BASIC */
+#endif /* CONFIG_OPLUS_FEATURE_CHG_BASIC */
 
 static const struct of_device_id battery_chg_match_table[] = {
 	{ .compatible = "oplus,hal_sm8350" },
@@ -6277,18 +6277,18 @@ static struct platform_driver battery_chg_driver = {
 	.driver = {
 		.name = "qti_battery_charger",
 		.of_match_table = battery_chg_match_table,
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 		.pm	= &battery_chg_pm_ops,
 #endif
 	},
 	.probe = battery_chg_probe,
 	.remove = battery_chg_remove,
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 	.shutdown = battery_chg_shutdown,
 #endif
 };
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
+#ifdef CONFIG_OPLUS_FEATURE_CHG_BASIC
 static int __init sm8350_chg_init(void)
 {
 	int ret;
