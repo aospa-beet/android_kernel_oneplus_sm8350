@@ -72,6 +72,14 @@
 	pxlw,soft-iris-enable;
 };
 
+&dsi_samsung_ams662zs01_dsc_cmd {
+	pxlw,soft-iris-enable;
+};
+
+&dsi_samsung_ams662zs01_dvt_dsc_cmd {
+	pxlw,soft-iris-enable;
+};
+
 &dsi_oplus20031_samsung_1440_3216_dsc_cmd {
 	pxlw,soft-iris-enable;
 };
@@ -98,10 +106,6 @@
 	pxlw,soft-iris-enable;
 	qcom,iris-supply-entries = <&dsi_iris_pwr_supply>;
 	qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0","div_clk";
-
-&dsi_samsung_amb655x_dsc_cmd {
-	pxlw,soft-iris-enable;
-};
 */
 
 &mdss_mdp {
